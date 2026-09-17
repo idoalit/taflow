@@ -1,0 +1,797 @@
+/*
+ * Industry — the design system behind the FiPro screens. Tokens and component
+ * classes are prefixed `ind-` so they sit alongside the starter kit's shadcn
+ * primitives (used by the auth and settings pages) without colliding.
+ */
+
+:root {
+    --ind-bg: #f2f2f3;
+    --ind-surface: #e9e9ea;
+    --ind-text: #1d1f20;
+    --ind-accent: #5980a6;
+    --ind-accent-2: #728fab;
+    --ind-divider: color-mix(in srgb, #1d1f20 16%, transparent);
+
+    --ind-neutral-100: #f5f5f8;
+    --ind-neutral-200: #e7e7ea;
+    --ind-neutral-300: #d4d4d7;
+    --ind-neutral-400: #b7b7ba;
+    --ind-neutral-500: #98989b;
+    --ind-neutral-600: #7a7a7d;
+    --ind-neutral-700: #5d5d60;
+    --ind-neutral-800: #424244;
+    --ind-neutral-900: #2b2b2d;
+
+    --ind-accent-100: #eef6ff;
+    --ind-accent-200: #d6ebff;
+    --ind-accent-300: #b5d9fd;
+    --ind-accent-400: #94bce3;
+    --ind-accent-500: #749dc4;
+    --ind-accent-600: #597ea3;
+    --ind-accent-700: #416180;
+    --ind-accent-800: #2c455d;
+    --ind-accent-900: #1d2d3d;
+
+    --ind-accent-2-100: #eef6ff;
+    --ind-accent-2-200: #d6ebff;
+    --ind-accent-2-300: #bdd8f2;
+    --ind-accent-2-400: #9ebbd8;
+    --ind-accent-2-500: #7e9cb8;
+    --ind-accent-2-600: #627d98;
+    --ind-accent-2-700: #486077;
+    --ind-accent-2-800: #314457;
+    --ind-accent-2-900: #1f2d3a;
+
+    --ind-font-heading:
+        'Barlow Condensed', ui-sans-serif, system-ui, sans-serif;
+    --ind-font-body: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+
+    --ind-space-1: 3.4px;
+    --ind-space-2: 6.8px;
+    --ind-space-3: 10.2px;
+    --ind-space-4: 13.6px;
+    --ind-space-6: 20.4px;
+    --ind-space-8: 27.2px;
+    --ind-space-10: 34px;
+
+    --ind-shadow-sm: 0 1px 2px color-mix(in srgb, #2b2b2d 14%, transparent);
+    --ind-shadow-md: 0 3px 10px color-mix(in srgb, #2b2b2d 16%, transparent);
+    --ind-shadow-lg: 0 12px 32px color-mix(in srgb, #2b2b2d 22%, transparent);
+
+    /* Status palette. The system maps every domain status onto one of five
+       categories; see `statusCategory()` on the client. */
+    --ind-status-success-bg: oklch(93% 0.045 145);
+    --ind-status-success-fg: oklch(33% 0.1 145);
+    --ind-status-warning-bg: oklch(94% 0.05 80);
+    --ind-status-warning-fg: oklch(38% 0.12 60);
+    --ind-status-error-bg: oklch(94% 0.045 25);
+    --ind-status-error-fg: oklch(40% 0.16 25);
+}
+
+/*
+ * Typography sits in @layer base and the component classes in
+ * @layer components, so a Tailwind utility on a component always wins:
+ * `<Card className="flex-row p-0">` has to beat `.ind-card`, and a
+ * `.ind-btn` has to beat the generic `.ind a` colour.
+ */
+@layer base {
+    /* ── Shell ─────────────────────────────────────────────────────────────── */
+
+    .ind {
+        background: var(--ind-bg);
+        color: var(--ind-text);
+        font-family: var(--ind-font-body);
+        font-size: 15px;
+        line-height: 1.55;
+    }
+
+    .ind h1,
+    .ind h2,
+    .ind h3,
+    .ind h4,
+    .ind h5,
+    .ind h6 {
+        font-family: var(--ind-font-heading);
+        font-weight: 600;
+        line-height: 1.12;
+        letter-spacing: -0.015em;
+        margin: 0 0 var(--ind-space-2);
+    }
+
+    .ind h1 {
+        font-size: 42px;
+    }
+    .ind h2 {
+        font-size: 32px;
+    }
+    .ind h3 {
+        font-size: 25px;
+    }
+    .ind h4 {
+        font-size: 20px;
+    }
+    .ind h5 {
+        font-size: 16px;
+    }
+    .ind h6 {
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .ind p {
+        margin: 0 0 var(--ind-space-3);
+    }
+    .ind a {
+        color: var(--ind-accent-700);
+        text-underline-offset: 3px;
+    }
+    .ind a:hover {
+        color: var(--ind-accent-900);
+    }
+    .ind :focus-visible {
+        outline: 2px solid var(--ind-accent);
+        outline-offset: 2px;
+    }
+    .ind ::selection {
+        background: var(--ind-accent-200);
+    }
+
+    .ind-muted {
+        color: color-mix(in srgb, var(--ind-text) 68%, transparent);
+    }
+    .ind-kicker {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ind-accent-700);
+    }
+    .ind-eyebrow {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--ind-text) 55%, transparent);
+    }
+}
+
+@layer components {
+    /* ── Blueprint frame ───────────────────────────────────────────────────── */
+
+    .ind-bp {
+        position: relative;
+    }
+    .ind-bp > .ind-corner {
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        color: color-mix(in srgb, var(--ind-text) 55%, transparent);
+        pointer-events: none;
+    }
+    .ind-bp > .ind-corner::before,
+    .ind-bp > .ind-corner::after {
+        content: '';
+        position: absolute;
+        background: currentColor;
+    }
+    .ind-bp > .ind-corner::before {
+        left: 5px;
+        top: 0;
+        width: 1px;
+        height: 100%;
+    }
+    .ind-bp > .ind-corner::after {
+        top: 5px;
+        left: 0;
+        width: 100%;
+        height: 1px;
+    }
+    .ind-bp > .ind-corner.tl {
+        top: -6px;
+        left: -6px;
+    }
+    .ind-bp > .ind-corner.tr {
+        top: -6px;
+        right: -6px;
+    }
+    .ind-bp > .ind-corner.bl {
+        bottom: -6px;
+        left: -6px;
+    }
+    .ind-bp > .ind-corner.br {
+        bottom: -6px;
+        right: -6px;
+    }
+
+    /* ── Buttons ───────────────────────────────────────────────────────────── */
+
+    .ind-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-family: var(--ind-font-heading);
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 1.2;
+        color: var(--ind-text);
+        background: transparent;
+        border: 1px solid var(--ind-divider);
+        border-radius: 0;
+        padding: var(--ind-space-2) calc(var(--ind-space-3) * 1.2);
+    }
+    .ind-btn svg {
+        display: block;
+    }
+    .ind-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+    .ind-btn-primary {
+        background: var(--ind-accent-700);
+        color: var(--ind-bg);
+        border-color: var(--ind-accent-700);
+    }
+    .ind-btn-primary:not(:disabled):hover {
+        background: var(--ind-accent-800);
+        border-color: var(--ind-accent-800);
+    }
+    .ind-btn-primary:not(:disabled):active {
+        background: var(--ind-accent-900);
+        border-color: var(--ind-accent-900);
+    }
+    .ind-btn-secondary:not(:disabled):hover {
+        background: color-mix(in srgb, var(--ind-text) 7%, transparent);
+    }
+    .ind-btn-secondary:not(:disabled):active {
+        background: color-mix(in srgb, var(--ind-text) 14%, transparent);
+    }
+    .ind-btn-ghost {
+        color: var(--ind-accent-700);
+        border-color: transparent;
+        padding-inline: var(--ind-space-1);
+    }
+    .ind-btn-ghost:not(:disabled):hover {
+        background: color-mix(in srgb, var(--ind-accent) 10%, transparent);
+    }
+    .ind-btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+    }
+    /* ── Figures ───────────────────────────────────────────────────────────── */
+
+    /* The big number on a KPI card; used wherever a single figure is the point. */
+    .ind-stat {
+        font-family: var(--ind-font-heading);
+        font-size: 28px;
+        font-weight: 600;
+        line-height: 1.1;
+    }
+    .ind-stat-sm {
+        font-size: 22px;
+    }
+
+    /* Load and progress meters on the admin lists. */
+    .ind-bar-track {
+        height: 6px;
+        background: var(--ind-neutral-200);
+        overflow: hidden;
+    }
+    .ind-bar-fill {
+        height: 100%;
+        background: var(--ind-accent-600);
+    }
+    .ind-bar-fill[data-full='true'] {
+        background: var(--ind-accent-900);
+    }
+
+    /* ── File rows ─────────────────────────────────────────────────────────── */
+
+    /* One rule for both the <button> that opens a preview and the <a> that
+       downloads, so the two read as the same affordance. */
+    .ind-file-name {
+        appearance: none;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        text-align: left;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ind-accent-700);
+        cursor: pointer;
+    }
+    .ind-file-name:hover {
+        text-decoration: underline;
+    }
+    .ind-file-download {
+        display: inline-flex;
+        align-items: center;
+        color: color-mix(in srgb, var(--ind-text) 55%, transparent);
+    }
+    .ind-file-download:hover {
+        color: var(--ind-accent-700);
+    }
+
+    .ind-btn-block {
+        width: 100%;
+    }
+
+    /* ── Forms ─────────────────────────────────────────────────────────────── */
+
+    .ind-label {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 5px;
+        color: color-mix(in srgb, var(--ind-text) 70%, transparent);
+    }
+    .ind-input {
+        width: 100%;
+        min-height: 36px;
+        padding: 6px 10px;
+        font: inherit;
+        font-size: 14px;
+        color: var(--ind-text);
+        caret-color: var(--ind-accent);
+        background: var(--ind-surface);
+        border: 1px solid var(--ind-divider);
+        border-radius: 0;
+    }
+    .ind-input:hover {
+        border-color: color-mix(in srgb, var(--ind-text) 45%, transparent);
+    }
+    .ind-input:focus-visible {
+        border-color: var(--ind-accent);
+        outline-offset: 0;
+    }
+    textarea.ind-input {
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    /* ── Rubric hierarchy ──────────────────────────────────────────────────── */
+
+    /* A derived code: shown so the reader can find the item on the printed
+       form, never typed, so it cannot disagree with its position. */
+    .ind-rubric-code {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        margin-bottom: 6px;
+        padding: 0 6px;
+        background: var(--ind-accent-700);
+        color: var(--ind-bg);
+        font-family: var(--ind-font-heading);
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .ind-rubric-code-sub {
+        background: var(--ind-accent-600);
+    }
+    .ind-rubric-code-item {
+        min-width: 24px;
+        height: 24px;
+        background: transparent;
+        border: 1px solid var(--ind-divider);
+        color: color-mix(in srgb, var(--ind-text) 60%, transparent);
+        font-size: 12px;
+    }
+
+    /* The rule that makes parent and child legible at a glance. */
+    .ind-rubric-child {
+        border-left: 1px solid var(--ind-divider);
+        padding-left: var(--ind-space-4);
+    }
+
+    /* ── Tabs ──────────────────────────────────────────────────────────────── */
+
+    /* The primary switch on a screen: which slice of the same list you are
+       looking at. A quieter segmented control (.ind-seg) narrows within it. */
+    .ind-tabs {
+        display: flex;
+        gap: var(--ind-space-6);
+        overflow-x: auto;
+        /* overflow-x:auto forces overflow-y to compute as auto too, so anything
+           poking past the content box earns a vertical scrollbar. The divider
+           is drawn as an inset shadow rather than a border precisely so the
+           active tab's underline can cover it without a negative margin. */
+        overflow-y: hidden;
+        box-shadow: inset 0 -1px 0 var(--ind-divider);
+    }
+    .ind-tab {
+        padding: var(--ind-space-3) 0;
+        white-space: nowrap;
+        cursor: pointer;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        font-family: var(--ind-font-heading);
+        font-size: 14px;
+        font-weight: 400;
+        color: color-mix(in srgb, var(--ind-text) 60%, transparent);
+    }
+    .ind-tab[aria-selected='true'] {
+        font-weight: 600;
+        color: var(--ind-accent-700);
+        border-bottom-color: var(--ind-accent);
+    }
+    .ind-tab[aria-selected='false']:hover {
+        color: var(--ind-text);
+    }
+
+    /* ── Page rhythm ───────────────────────────────────────────────────────── */
+
+    /* Top-level blocks on a screen — header, tabs, filters, table, each section
+       of a detail page. Wide enough that a heading is read as belonging to what
+       follows it rather than to what came before. */
+    .ind-page {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ind-space-10);
+    }
+    /* Within one block: a heading and the thing it labels. */
+    .ind-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ind-space-4);
+    }
+    /* A heading inside a section is spaced by the section's gap, not by its
+       own margin as well. */
+    .ind-section > h4,
+    .ind-section > h5,
+    .ind-section > h6 {
+        margin-bottom: 0;
+    }
+
+    /* A checkbox that belongs to the palette rather than the browser's. */
+    .ind-check {
+        display: flex;
+        align-items: center;
+        gap: var(--ind-space-3);
+        font-size: 13.5px;
+        cursor: pointer;
+    }
+    .ind-check input[type='checkbox'] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--ind-accent-700);
+        cursor: pointer;
+    }
+
+    /* A label spanning a table, naming the rows beneath it — a merged list
+       that is really several numbered sheets read as one. */
+    .ind-row-group {
+        padding-top: var(--ind-space-4);
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ind-muted);
+    }
+
+    .ind-seg {
+        display: inline-flex;
+        /* Without this it stretches to the width of the flex column it sits in
+           and stops reading as a control. */
+        align-self: flex-start;
+        overflow: hidden;
+        border: 1px solid var(--ind-divider);
+        border-radius: 0;
+    }
+    .ind-seg-opt {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        background: transparent;
+        border: 0;
+        font-family: var(--ind-font-body);
+        color: var(--ind-text);
+    }
+    .ind-seg-opt + .ind-seg-opt {
+        border-left: 1px solid var(--ind-divider);
+    }
+    .ind-seg-opt[aria-pressed='true'] {
+        background: var(--ind-accent-700);
+        color: var(--ind-bg);
+    }
+    .ind-seg-opt[aria-disabled='true'] {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+    .ind-seg-opt[aria-pressed='false']:not([aria-disabled='true']):hover {
+        background: color-mix(in srgb, var(--ind-text) 7%, transparent);
+    }
+
+    /* ── Cards ─────────────────────────────────────────────────────────────── */
+
+    .ind-card {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ind-space-2);
+        padding: var(--ind-space-3);
+        background: transparent;
+        border: 1px solid var(--ind-divider);
+        border-radius: 0;
+    }
+    .ind-card-title {
+        font-family: var(--ind-font-heading);
+        font-weight: 600;
+        font-size: 17px;
+        line-height: 1.2;
+    }
+    .ind-card-body {
+        margin: 0;
+        font-size: 13px;
+        flex: 1;
+    }
+    .ind-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: color-mix(in srgb, var(--ind-text) 50%, transparent);
+    }
+
+    /* ── Tags ──────────────────────────────────────────────────────────────── */
+
+    .ind-tag {
+        display: inline-flex;
+        align-items: center;
+        font-size: 11px;
+        letter-spacing: 0.02em;
+        padding: 3px 10px;
+        border-radius: 0;
+        white-space: nowrap;
+    }
+    .ind-tag-accent {
+        background: var(--ind-accent-100);
+        color: var(--ind-accent-800);
+    }
+    .ind-tag-accent-2 {
+        background: var(--ind-accent-2-100);
+        color: var(--ind-accent-2-800);
+    }
+    .ind-tag-neutral {
+        background: var(--ind-neutral-100);
+        color: var(--ind-neutral-800);
+    }
+    .ind-tag-outline {
+        border: 1px solid var(--ind-accent);
+        color: var(--ind-accent);
+    }
+    .ind-tag-success {
+        background: var(--ind-status-success-bg);
+        color: var(--ind-status-success-fg);
+    }
+    .ind-tag-warning {
+        background: var(--ind-status-warning-bg);
+        color: var(--ind-status-warning-fg);
+    }
+    .ind-tag-error {
+        background: var(--ind-status-error-bg);
+        color: var(--ind-status-error-fg);
+    }
+    .ind-tag-info {
+        background: var(--ind-accent-100);
+        color: var(--ind-accent-800);
+    }
+
+    /* ── Tables ────────────────────────────────────────────────────────────── */
+
+    .ind-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .ind-table th {
+        text-align: left;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--ind-text) 60%, transparent);
+        padding: var(--ind-space-2);
+        border-bottom: 1px solid var(--ind-divider);
+        white-space: nowrap;
+    }
+    .ind-table td {
+        padding: var(--ind-space-2);
+        border-bottom: 1px solid
+            color-mix(in srgb, var(--ind-text) 8%, transparent);
+    }
+    .ind-table tbody tr:hover {
+        background: color-mix(in srgb, var(--ind-text) 4%, transparent);
+    }
+
+    /* ── Sidebar item ──────────────────────────────────────────────────────── */
+
+    .ind-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        text-align: left;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-family: var(--ind-font-body);
+        font-size: 14px;
+        padding: 7px 8px;
+        color: var(--ind-text);
+        text-decoration: none;
+    }
+    .ind-nav-item:hover {
+        background: var(--ind-accent-100);
+        color: var(--ind-text);
+    }
+    .ind-nav-item svg {
+        flex-shrink: 0;
+    }
+    .ind-nav-item[aria-current='page'] {
+        color: var(--ind-accent-700);
+        font-weight: 600;
+    }
+
+    /* ── Dialog ────────────────────────────────────────────────────────────── */
+
+    .ind-dialog-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 95;
+        display: grid;
+        place-items: center;
+        padding: var(--ind-space-4);
+        background: color-mix(in srgb, var(--ind-neutral-900) 50%, transparent);
+    }
+    /* Radix positions the content itself; the overlay only paints the ground.
+       The frame must never scroll: its registration marks sit 6px outside the
+       box, and an overflow on this element would count them as overflow and
+       show a scrollbar even when the content fits. Scrolling lives on the
+       body below instead. */
+    /* The dialog deliberately uses whole-pixel padding and gaps rather than the
+       fractional --ind-space-* tokens. A scrollable box whose content height
+       lands on a fraction rounds up, so `overflow-y: auto` shows a permanent
+       scrollbar even when everything fits. */
+    .ind-dialog-centered {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 96;
+    }
+    .ind-dialog {
+        width: min(460px, 100%);
+        display: flex;
+        flex-direction: column;
+        /* 14 here + 6 on the body = the 20px the design asks for; the 6 is what
+           gives nested registration marks room (see .ind-dialog-body). */
+        padding: 14px;
+        background: var(--ind-bg);
+        border: 1px solid var(--ind-divider);
+        border-radius: 0;
+        box-shadow: var(--ind-shadow-lg);
+    }
+    /* The cap lives on the body, not on the frame. Capping the frame made the
+       body a shrinking flex item, and shrinking it to the frame's fractional
+       height rounded it a few pixels below its own content — a scrollbar that
+       never went away however much room there was. Sized by its own content
+       instead, it scrolls only when it genuinely exceeds the viewport. */
+    .ind-dialog-body {
+        display: flex;
+        flex-direction: column;
+        flex: 0 0 auto;
+        gap: 10px;
+        /* Registration marks sit 6px outside their box, so a framed button at
+           the bottom of this scroll container pushed its corners past the edge
+           and painted a scrollbar that could never be scrolled away. The
+           padding gives them room inside the scrollable area; the frame's own
+           padding is reduced by the same 6px so the design still reads as 20.
+           overflow-x stays hidden: declaring only overflow-y would let the used
+           value of overflow-x become `auto` and add a bar along the bottom. */
+        padding: 6px;
+        max-height: calc(100dvh - 74px);
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+    /* Inside a dialog the `rows` attribute governs: the global 90px floor makes
+       a two-row note as tall as a four-row one and pushes the footer off. */
+    .ind-dialog textarea.ind-input {
+        min-height: 0;
+    }
+    /* Flex items default to min-width:auto and refuse to shrink below their
+       content, which is the other way width escapes the dialog. */
+    .ind-dialog-body > * {
+        min-width: 0;
+    }
+    .ind-dialog-title {
+        font-family: var(--ind-font-heading);
+        font-weight: 600;
+        font-size: 20px;
+        line-height: 1.2;
+    }
+
+    /* Destructive actions borrow the status palette rather than the accent. */
+    .ind-btn-danger {
+        background: var(--ind-status-error-fg);
+        color: var(--ind-bg);
+        border-color: var(--ind-status-error-fg);
+    }
+    .ind-btn-danger:not(:disabled):hover {
+        filter: brightness(0.9);
+    }
+
+    /* ── Scrollbars ────────────────────────────────────────────────────────── */
+
+    /* Scrolling inside a panel is legitimate on a short window; what is not is
+       the platform's default bar crashing into the design. Firefox inherits
+       scrollbar-color, so setting it on the surface covers every child — and
+       fixes the white-on-white thumb that made it invisible there. */
+    .ind {
+        scrollbar-width: thin;
+        scrollbar-color: var(--ind-neutral-400) transparent;
+    }
+    .ind ::-webkit-scrollbar,
+    .ind::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    .ind ::-webkit-scrollbar-track,
+    .ind::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .ind ::-webkit-scrollbar-thumb,
+    .ind::-webkit-scrollbar-thumb {
+        background: var(--ind-neutral-400);
+        border: 3px solid transparent;
+        background-clip: padding-box;
+        border-radius: 0;
+    }
+    .ind ::-webkit-scrollbar-thumb:hover,
+    .ind::-webkit-scrollbar-thumb:hover {
+        background: var(--ind-neutral-600);
+        background-clip: padding-box;
+    }
+    .ind ::-webkit-scrollbar-corner,
+    .ind::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    /* ── Tooltip ───────────────────────────────────────────────────────────── */
+
+    .ind-tooltip {
+        z-index: 90;
+        max-width: 280px;
+        padding: 8px 10px;
+        font-family: var(--ind-font-body);
+        font-size: 12.5px;
+        line-height: 1.45;
+        background: var(--ind-neutral-900);
+        color: var(--ind-bg);
+        border-radius: 0;
+        box-shadow: var(--ind-shadow-md);
+    }
+    .ind-tooltip-arrow {
+        fill: var(--ind-neutral-900);
+    }
+
+    /* ── Progress bar ──────────────────────────────────────────────────────── */
+
+    .ind-bar-track {
+        height: 6px;
+        background: var(--ind-neutral-200);
+        width: 100%;
+        overflow: hidden;
+    }
+    .ind-bar-fill {
+        height: 100%;
+        background: var(--ind-accent-600);
+    }
+}
