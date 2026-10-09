@@ -136,6 +136,14 @@ function makeAdmin(Department $department): User
     return $admin;
 }
 
+function makeSuperAdmin(): User
+{
+    $superadmin = User::factory()->create();
+    $superadmin->syncRoles([UserRole::SuperAdmin->value]);
+
+    return $superadmin;
+}
+
 /**
  * Give a student a decided ujian proposal — the gate that opens research-stage
  * guidance. Nothing in the application schedules or evaluates one yet.

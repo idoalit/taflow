@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Models\ProposalExam;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -28,6 +29,26 @@ it('lets a superadmin delete any account', function (): void {
 
     expect(Gate::forUser($superadmin)->allows('delete', makeStudent()->user))->toBeTrue()
         ->and(Gate::forUser($superadmin)->allows('delete', makeLecturer()->user))->toBeTrue();
+});
+
+it('does not let a superadmin delete a dosen who still sits on a student\'s panel', function (): void {
+    $lecturer = assignSupervisor(makeStudent());
+
+    $denial = Gate::forUser(makeSuperAdmin())->inspect('delete', $lecturer->user);
+
+    expect($denial->allowed())->toBeFalse()
+        ->and($denial->message())->toContain('masih tercatat sebagai pembimbing atau penguji mahasiswa');
+});
+
+it('does not let a superadmin delete whoever scheduled an exam', function (): void {
+    $department = makeDepartment();
+    $admin = makeAdmin($department);
+    ProposalExam::factory()->for(makeStudent($department))->create(['scheduled_by' => $admin->id]);
+
+    $denial = Gate::forUser(makeSuperAdmin())->inspect('delete', $admin);
+
+    expect($denial->allowed())->toBeFalse()
+        ->and($denial->message())->toContain('pernah menjadwalkan ujian');
 });
 
 it('lets a program admin delete a student in their own department only', function (): void {
