@@ -10,10 +10,24 @@ let signedIn: string | null = null;
 /** The password every account in the story ends up with. */
 export const PASSWORD = 'RahasiaE2E!2026';
 
+/** The only account the database starts with; see E2EBootstrapSeeder. */
+export const superadmin = {
+    name: 'Superadmin E2E',
+    email: 'superadmin.e2e@fipro.test',
+    password: 'password',
+};
+
+export const department = {
+    name: 'Teknik Informatika',
+    code: 'TI',
+    faculty: 'Fakultas Teknik',
+};
+
+/** Created by the superadmin in Bagian 0, and activated like everyone else. */
 export const admin = {
     name: 'Admin Prodi E2E',
     email: 'admin.e2e@fipro.test',
-    password: 'password',
+    password: PASSWORD,
 };
 
 export const lecturers = {
@@ -46,6 +60,20 @@ export const student = {
     angkatan: '2022',
     judul: 'Klasifikasi Keluhan Layanan Akademik dengan Naive Bayes',
 };
+
+/**
+ * A moment some days from today, in the shape a datetime-local field takes.
+ * Schedules have to lie in the future, so a date written into a test stops
+ * being valid the day it is reached; this one keeps its distance.
+ */
+export function inDays(days: number, time: string): string {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+
+    const pad = (value: number) => String(value).padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${time}`;
+}
 
 export async function signIn(
     page: Page,
@@ -84,6 +112,23 @@ export async function activateAccount(
 
     await expect(page.getByText(/link.*sent|tautan/i).first()).toBeVisible();
 
+    await page.goto(latestResetLink(email));
+    await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+    await page.getByLabel(/confirm password/i).fill(PASSWORD);
+    await page.getByRole('button', { name: /reset password/i }).click();
+
+    await page.waitForURL(/\/login/);
+}
+
+/**
+ * An account the superadmin created is mailed its link without asking for one.
+ * The test opens that same mail rather than requesting a second link, so the
+ * invitation itself is what gets proven.
+ */
+export async function acceptInvitation(
+    page: Page,
+    email: string,
+): Promise<void> {
     await page.goto(latestResetLink(email));
     await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     await page.getByLabel(/confirm password/i).fill(PASSWORD);

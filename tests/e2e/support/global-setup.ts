@@ -14,8 +14,8 @@ export const PARKED_HOT_FILE = 'storage/e2e-results/hot.parked';
 
 /**
  * Wipe everything before the story starts: an empty schema, the roles and
- * permissions the app cannot boot without, one program studi and one Admin
- * Prodi. Nothing else — every other account and record is made through the UI.
+ * permissions the app cannot boot without, and one superadmin. Nothing else —
+ * the program studi, its admin and every other record are made through the UI.
  */
 export default function globalSetup(): void {
     if (process.env.E2E_SKIP_BUILD !== '1') {

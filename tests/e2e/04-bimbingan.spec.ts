@@ -1,4 +1,4 @@
-import { lecturers, signInAs, student } from './support/actors';
+import { inDays, lecturers, signInAs, student } from './support/actors';
 import { expect, test } from './support/app';
 
 /**
@@ -61,7 +61,7 @@ test.describe.serial('Bagian 4 · Bimbingan proposal', () => {
             await app.getByLabel('Lokasi Pertemuan').fill('Ruang Dosen 301');
             await app
                 .getByLabel('Jadwal Pertemuan')
-                .fill(`2026-10-0${index + 1}T10:00`);
+                .fill(inDays(index + 1, '10:00'));
             await app
                 .getByLabel('Catatan Awal')
                 .fill('Mohon arahan untuk bagian ini.');

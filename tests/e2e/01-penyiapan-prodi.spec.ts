@@ -10,8 +10,9 @@ import {
 /**
  * Bagian 1 — Admin Prodi menyiapkan program studi.
  *
- * Tidak ada peran lain yang bisa berbuat apa pun sebelum ini: belum ada akun,
- * belum ada aturan, dan belum ada rubrik untuk menilai.
+ * Program studi dan akun admin-nya sudah dibuat superadmin di Bagian 0, tetapi
+ * dosen dan mahasiswa belum bisa berbuat apa pun: belum ada akun mereka, belum
+ * ada aturan, dan belum ada rubrik untuk menilai.
  */
 /**
  * Urutannya disusun agar bagian yang menopang cerita berikutnya — akun dan

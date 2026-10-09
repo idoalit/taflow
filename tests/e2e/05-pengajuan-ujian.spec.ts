@@ -1,4 +1,4 @@
-import { admin, lecturers, signInAs, student } from './support/actors';
+import { admin, inDays, lecturers, signInAs, student } from './support/actors';
 import { expect, test } from './support/app';
 
 /**
@@ -92,7 +92,7 @@ test.describe.serial('Bagian 5 · Pengajuan dan penjadwalan ujian', () => {
         await app
             .getByLabel('Judul Ujian')
             .fill(`Ujian Proposal — ${student.name}`);
-        await app.getByLabel('Tanggal & Waktu').fill('2026-11-10T09:00');
+        await app.getByLabel('Tanggal & Waktu').fill(inDays(30, '09:00'));
         await app.getByLabel('Tempat').fill('Ruang Sidang 1');
 
         // Both pembimbing are seated as well: the final grade cannot be
