@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\ExamStage;
+use App\Policies\RolePolicy;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -10,11 +11,13 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\ExceptionResponse;
 use Inertia\Inertia;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 class AppServiceProvider extends ServiceProvider
@@ -34,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureErrorPages();
+
+        // spatie's Role is not ours to annotate with #[UsePolicy].
+        Gate::policy(Role::class, RolePolicy::class);
     }
 
     /**
@@ -113,7 +119,9 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        return $exception instanceof AccessDeniedHttpException
+        // `abort(403, '…')` raises a plain HTTP exception rather than an access
+        // denied one, and the workspace gates refuse that way.
+        return $exception instanceof HttpExceptionInterface && $exception->getStatusCode() === 403
             ? $this->meaningfulMessage($exception->getMessage())
             : null;
     }

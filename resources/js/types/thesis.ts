@@ -9,7 +9,8 @@ export type NotificationCategory =
     | 'approval'
     | 'schedule'
     | 'reminder'
-    | 'document';
+    | 'document'
+    | 'announcement';
 
 export type AppNotification = {
     id: string;

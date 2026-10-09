@@ -61,7 +61,11 @@ export function IndustrySidebar({ onNavigate }: { onNavigate?: () => void }) {
             </div>
 
             <nav className="flex-1 overflow-y-auto">
-                {navigationFor(user.role, page.props.thesis).map((group) => (
+                {navigationFor(
+                    user.role,
+                    page.props.thesis,
+                    user.permissions,
+                ).map((group) => (
                     <div key={group.label}>
                         <div className="ind-eyebrow px-2 pt-4 pb-1 first:pt-2">
                             {group.label}
@@ -141,50 +145,58 @@ export function IndustrySidebar({ onNavigate }: { onNavigate?: () => void }) {
                                 <div className="ind-eyebrow px-2 py-[6px]">
                                     Ganti Workspace
                                 </div>
-                                {user.workspaces.map((workspace) => {
-                                    const active =
-                                        workspace.key === user.workspace?.key;
+                                {/* A superadmin holds a seat in every prodi, so
+                                    the list scrolls rather than pushing the
+                                    account links off the screen. */}
+                                <div className="max-h-[40vh] overflow-y-auto">
+                                    {user.workspaces.map((workspace) => {
+                                        const active =
+                                            workspace.key ===
+                                            user.workspace?.key;
 
-                                    return (
-                                        <button
-                                            key={workspace.key}
-                                            type="button"
-                                            className="ind-nav-item w-full cursor-pointer border-0 text-left"
-                                            style={{
-                                                background: active
-                                                    ? 'var(--ind-accent-100)'
-                                                    : 'transparent',
-                                            }}
-                                            onClick={() => {
-                                                setAccountOpen(false);
-                                                onNavigate?.();
+                                        return (
+                                            <button
+                                                key={workspace.key}
+                                                type="button"
+                                                className="ind-nav-item w-full cursor-pointer border-0 text-left"
+                                                style={{
+                                                    background: active
+                                                        ? 'var(--ind-accent-100)'
+                                                        : 'transparent',
+                                                }}
+                                                onClick={() => {
+                                                    setAccountOpen(false);
+                                                    onNavigate?.();
 
-                                                if (active) {
-                                                    return;
-                                                }
+                                                    if (active) {
+                                                        return;
+                                                    }
 
-                                                router.post(
-                                                    updateWorkspace().url,
-                                                    {
-                                                        workspace:
-                                                            workspace.key,
-                                                    },
-                                                    { preserveState: false },
-                                                );
-                                            }}
-                                        >
-                                            <span className="min-w-0 flex-1 truncate">
-                                                {workspace.label}
-                                            </span>
-                                            {active && (
-                                                <Check
-                                                    size={15}
-                                                    strokeWidth={1.5}
-                                                />
-                                            )}
-                                        </button>
-                                    );
-                                })}
+                                                    router.post(
+                                                        updateWorkspace().url,
+                                                        {
+                                                            workspace:
+                                                                workspace.key,
+                                                        },
+                                                        {
+                                                            preserveState: false,
+                                                        },
+                                                    );
+                                                }}
+                                            >
+                                                <span className="min-w-0 flex-1 truncate">
+                                                    {workspace.label}
+                                                </span>
+                                                {active && (
+                                                    <Check
+                                                        size={15}
+                                                        strokeWidth={1.5}
+                                                    />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                                 <div
                                     className="my-[var(--ind-space-2)] border-t"
                                     style={{

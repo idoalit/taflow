@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Thesis\ComposeFinalGrade;
+use App\Enums\AuditAction;
 use App\Enums\ExamParticipantRole;
 use App\Enums\ExamResult;
 use App\Enums\ExamStage;
@@ -76,7 +77,7 @@ class ExamMinutesController extends Controller
 
         AuditLog::record(
             $minutes,
-            'minutes.decided',
+            AuditAction::MinutesDecided,
             $request->user(),
             changes: [
                 'decision' => $validated['decision'],

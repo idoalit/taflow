@@ -6,6 +6,7 @@ use App\Actions\Thesis\BuildExamPanel;
 use App\Actions\Thesis\BuildVerificationQr;
 use App\Actions\Thesis\ComposeFinalGrade;
 use App\Enums\ApprovalStatus;
+use App\Enums\AuditAction;
 use App\Enums\ExamParticipantRole;
 use App\Enums\ExamResult;
 use App\Enums\ExamStage;
@@ -1109,7 +1110,7 @@ class DemoThesisSeeder extends Seeder
             'completed_at' => $sat->copy()->addMinutes(90),
         ]);
 
-        AuditLog::record($minutes, 'minutes.decided', $chair->user, changes: [
+        AuditLog::record($minutes, AuditAction::MinutesDecided, $chair->user, changes: [
             'decision' => ExamResult::ConditionalPass->value,
             'final_score' => $grade['final_score'],
         ]);
@@ -1128,7 +1129,7 @@ class DemoThesisSeeder extends Seeder
 
         app(BuildVerificationQr::class)->tokenFor($exam->refresh());
 
-        AuditLog::record($exam, 'exam.released', $admin);
+        AuditLog::record($exam, AuditAction::ExamReleased, $admin);
     }
 
     /**

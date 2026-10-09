@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\Thesis\BuildVerificationQr;
 use App\Actions\Thesis\ComposeFinalGrade;
 use App\Actions\Thesis\NotifyThesisParticipants;
+use App\Enums\AuditAction;
 use App\Enums\ExamStage;
 use App\Enums\ExamStatus;
 use App\Enums\NotificationCategory;
@@ -59,7 +60,7 @@ class ExamReleaseController extends Controller
 
         app(BuildVerificationQr::class)->tokenFor($thesisExam->refresh());
 
-        AuditLog::record($thesisExam, 'exam.released', $request->user(), request: $request);
+        AuditLog::record($thesisExam, AuditAction::ExamReleased, $request->user(), request: $request);
 
         $notify->student(
             $thesisExam->student,
@@ -98,7 +99,7 @@ class ExamReleaseController extends Controller
 
         AuditLog::record(
             $thesisExam,
-            'exam.unlocked',
+            AuditAction::ExamUnlocked,
             $request->user(),
             reason: $validated['reason'],
             request: $request,

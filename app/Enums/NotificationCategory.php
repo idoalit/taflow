@@ -8,6 +8,7 @@ enum NotificationCategory: string
     case Schedule = 'schedule';
     case Reminder = 'reminder';
     case Document = 'document';
+    case Announcement = 'announcement';
 
     /**
      * Human readable label, in Bahasa Indonesia, as shown on the category tag.
@@ -19,6 +20,7 @@ enum NotificationCategory: string
             self::Schedule => 'Jadwal',
             self::Reminder => 'Pengingat',
             self::Document => 'Dokumen',
+            self::Announcement => 'Pengumuman',
         };
     }
 
@@ -32,6 +34,7 @@ enum NotificationCategory: string
             self::Schedule => 'info',
             self::Reminder => 'warning',
             self::Document => 'neutral',
+            self::Announcement => 'info',
         };
     }
 }

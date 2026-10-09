@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Thesis\CaptureSignature;
+use App\Enums\AuditAction;
 use App\Enums\ExamStage;
 use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
@@ -70,7 +71,7 @@ class ExamSignatureController extends Controller
 
         AuditLog::record(
             $participant,
-            'participant.signed',
+            AuditAction::ParticipantSigned,
             $request->user(),
             changes: ['role' => $participant->role->value],
             request: $request,

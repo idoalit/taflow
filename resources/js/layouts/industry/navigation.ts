@@ -1,14 +1,17 @@
 import {
     BookOpen,
+    Building2,
     CalendarDays,
-    CalendarCheck,
     ClipboardCheck,
     FileText,
     Home,
+    Megaphone,
     MessageSquare,
     Printer,
     Scale,
+    ScrollText,
     Settings,
+    ShieldCheck,
     SquareCheckBig,
     Upload,
     User,
@@ -34,12 +37,23 @@ import { index as proposalExamRequests } from '@/routes/proposal-exam-requests';
 import { index as proposals } from '@/routes/proposals';
 import { index as researchExamRequests } from '@/routes/research-exam-requests';
 import { index as researchLogbooks } from '@/routes/research-logbooks';
+import { index as superadminActivityLogs } from '@/routes/superadmin/activity-logs';
+import { index as superadminBroadcasts } from '@/routes/superadmin/broadcasts';
+import { index as superadminDepartments } from '@/routes/superadmin/departments';
+import { index as superadminRoles } from '@/routes/superadmin/roles';
+import { edit as superadminSettings } from '@/routes/superadmin/settings';
+import { index as superadminUsers } from '@/routes/superadmin/users';
 import type { ThesisSettings, UserRole } from '@/types';
 
 export type IndustryNavItem = {
     label: string;
     href: string;
     icon: LucideIcon;
+    /**
+     * The permission the destination itself checks. An item whose permission
+     * the role editor has taken away is dropped rather than left to refuse.
+     */
+    permission?: string;
 };
 
 export type IndustryNavGroup = {
@@ -57,11 +71,17 @@ const STUDENT_NAV: IndustryNavGroup[] = [
     {
         label: 'Proposal',
         items: [
-            { label: 'Daftar Proposal', href: proposals.url(), icon: FileText },
+            {
+                label: 'Daftar Proposal',
+                href: proposals.url(),
+                icon: FileText,
+                permission: 'proposal.view',
+            },
             {
                 label: 'Pengajuan Ujian',
                 href: proposalExamRequests.url(),
                 icon: SquareCheckBig,
+                permission: 'exam.view',
             },
         ],
     },
@@ -72,6 +92,7 @@ const STUDENT_NAV: IndustryNavGroup[] = [
                 label: 'Sesi Bimbingan',
                 href: guidanceSessions.url(),
                 icon: MessageSquare,
+                permission: 'guidance.view',
             },
             {
                 label: 'Cetak Kartu Bimbingan',
@@ -87,11 +108,13 @@ const STUDENT_NAV: IndustryNavGroup[] = [
                 label: 'Logbook Penelitian',
                 href: researchLogbooks.url(),
                 icon: BookOpen,
+                permission: 'logbook.view',
             },
             {
                 label: 'Ujian Hasil Penelitian',
                 href: researchExamRequests.url(),
                 icon: ClipboardCheck,
+                permission: 'exam.view',
             },
         ],
     },
@@ -106,11 +129,13 @@ const LECTURER_NAV: IndustryNavGroup[] = [
                 label: 'Tinjauan Proposal',
                 href: proposals.url(),
                 icon: FileText,
+                permission: 'proposal.view',
             },
             {
                 label: 'Persamaan Persepsi',
                 href: perceptionAlignments.url(),
                 icon: Scale,
+                permission: 'proposal.review',
             },
         ],
     },
@@ -121,6 +146,7 @@ const LECTURER_NAV: IndustryNavGroup[] = [
                 label: 'Sesi Bimbingan',
                 href: guidanceSessions.url(),
                 icon: MessageSquare,
+                permission: 'guidance.view',
             },
             {
                 label: 'Cetak Kartu Bimbingan',
@@ -136,50 +162,13 @@ const LECTURER_NAV: IndustryNavGroup[] = [
                 label: 'Verifikasi Pengajuan Ujian',
                 href: examVerifications.url(),
                 icon: SquareCheckBig,
+                permission: 'exam.view',
             },
             {
                 label: 'Pelaksanaan Ujian',
                 href: exams.url(),
                 icon: ClipboardCheck,
-            },
-        ],
-    },
-];
-
-/**
- * Navigation for the roles whose dedicated screens are not built yet. They
- * still reach the shared resources, which already scope themselves by role.
- */
-const SHARED_NAV: IndustryNavGroup[] = [
-    PLATFORM,
-    {
-        label: 'Bimbingan',
-        items: [
-            { label: 'Proposal', href: proposals.url(), icon: FileText },
-            {
-                label: 'Sesi Bimbingan',
-                href: guidanceSessions.url(),
-                icon: MessageSquare,
-            },
-            {
-                label: 'Logbook Penelitian',
-                href: researchLogbooks.url(),
-                icon: BookOpen,
-            },
-        ],
-    },
-    {
-        label: 'Ujian',
-        items: [
-            {
-                label: 'Pengajuan Ujian Proposal',
-                href: proposalExamRequests.url(),
-                icon: SquareCheckBig,
-            },
-            {
-                label: 'Ujian Hasil Penelitian',
-                href: researchExamRequests.url(),
-                icon: CalendarCheck,
+                permission: 'exam.view',
             },
         ],
     },
@@ -194,13 +183,29 @@ const ADMIN_NAV: IndustryNavGroup[] = [
     {
         label: 'Data',
         items: [
-            { label: 'Mahasiswa', href: adminStudents.url(), icon: Users },
-            { label: 'Dosen', href: adminLecturers.url(), icon: User },
-            { label: 'Import Data', href: adminImport.url(), icon: Upload },
+            {
+                label: 'Mahasiswa',
+                href: adminStudents.url(),
+                icon: Users,
+                permission: 'student.view',
+            },
+            {
+                label: 'Dosen',
+                href: adminLecturers.url(),
+                icon: User,
+                permission: 'lecturer.view',
+            },
+            {
+                label: 'Import Data',
+                href: adminImport.url(),
+                icon: Upload,
+                permission: 'data.import',
+            },
             {
                 label: 'Pengaturan Tugas Akhir',
                 href: adminThesisSettings.url(),
                 icon: Settings,
+                permission: 'thesis-setting.manage',
             },
         ],
     },
@@ -211,18 +216,26 @@ const ADMIN_NAV: IndustryNavGroup[] = [
                 label: 'Monitoring Bimbingan',
                 href: adminMonitoring.url(),
                 icon: FileText,
+                permission: 'guidance.monitor',
             },
             {
                 label: 'Pengajuan Ujian',
                 href: adminExamRequests.url(),
                 icon: SquareCheckBig,
+                permission: 'exam.view',
             },
             {
                 label: 'Pelaksanaan Ujian',
                 href: adminExams.url(),
                 icon: CalendarDays,
+                permission: 'exam.schedule',
             },
-            { label: 'Rubrik Ujian', href: adminRubrics.url(), icon: BookOpen },
+            {
+                label: 'Rubrik Ujian',
+                href: adminRubrics.url(),
+                icon: BookOpen,
+                permission: 'rubric.manage',
+            },
         ],
     },
     {
@@ -232,6 +245,61 @@ const ADMIN_NAV: IndustryNavGroup[] = [
                 label: 'Laporan & Rekap',
                 href: adminReports.url(),
                 icon: ClipboardCheck,
+                permission: 'report.view',
+            },
+        ],
+    },
+];
+
+/**
+ * Superadmin. Nothing here belongs to one program studi: these are the screens
+ * that create the prodi, the people who run them, and the rules they all share.
+ */
+const SUPERADMIN_NAV: IndustryNavGroup[] = [
+    PLATFORM,
+    {
+        label: 'Kelola',
+        items: [
+            {
+                label: 'Program Studi',
+                href: superadminDepartments.url(),
+                icon: Building2,
+                permission: 'department.manage',
+            },
+            {
+                label: 'Pengguna',
+                href: superadminUsers.url(),
+                icon: Users,
+                permission: 'user.view',
+            },
+            {
+                label: 'Peran & Izin',
+                href: superadminRoles.url(),
+                icon: ShieldCheck,
+                permission: 'role.manage',
+            },
+        ],
+    },
+    {
+        label: 'Sistem',
+        items: [
+            {
+                label: 'Siaran',
+                href: superadminBroadcasts.url(),
+                icon: Megaphone,
+                permission: 'broadcast.manage',
+            },
+            {
+                label: 'Log Aktivitas',
+                href: superadminActivityLogs.url(),
+                icon: ScrollText,
+                permission: 'activity-log.view',
+            },
+            {
+                label: 'Pengaturan Sistem',
+                href: superadminSettings.url(),
+                icon: Settings,
+                permission: 'system-setting.manage',
             },
         ],
     },
@@ -241,32 +309,39 @@ const NAV_BY_ROLE: Record<UserRole, IndustryNavGroup[]> = {
     student: STUDENT_NAV,
     lecturer: LECTURER_NAV,
     admin: ADMIN_NAV,
-    'super-admin': SHARED_NAV,
+    'super-admin': SUPERADMIN_NAV,
 };
 
 export function navigationFor(
     role: UserRole | null,
     thesis: ThesisSettings | null = null,
+    permissions: string[] = [],
 ): IndustryNavGroup[] {
     const groups = role === null ? [PLATFORM] : NAV_BY_ROLE[role];
 
-    if (thesis?.requiresProposalExam !== false) {
-        return groups;
-    }
-
-    // The program studi runs no ujian proposal, so the shortcut would only lead
-    // to a refusal. Drop it, and any group it leaves empty.
+    // Two things take an item out of the menu: a permission the role no longer
+    // holds, and — where the program studi runs no ujian proposal — the
+    // shortcut that would only lead to a refusal. A group left empty goes too.
     return groups
         .map((group) => ({
             ...group,
             items: group.items.filter(
-                (item) => item.href !== proposalExamRequests.url(),
+                (item) =>
+                    (item.permission === undefined ||
+                        permissions.includes(item.permission)) &&
+                    (thesis?.requiresProposalExam !== false ||
+                        item.href !== proposalExamRequests.url()),
             ),
         }))
         .filter((group) => group.items.length > 0);
 }
 
+const TAGLINES: Partial<Record<UserRole, string>> = {
+    admin: 'Admin Program Studi',
+    'super-admin': 'Superadmin',
+};
+
 /** The tagline under the wordmark changes per role, as in the design. */
 export function brandTagline(role: UserRole | null): string {
-    return role === 'admin' ? 'Admin Program Studi' : 'Bimbingan Tugas Akhir';
+    return (role && TAGLINES[role]) ?? 'Bimbingan Tugas Akhir';
 }

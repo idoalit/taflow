@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Policies\DepartmentPolicy;
+use App\Support\SystemSettings;
 use Carbon\CarbonInterface;
 use Database\Factories\DepartmentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -20,8 +23,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $is_active
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
+ * @property-read int|null $students_count
+ * @property-read int|null $lecturers_count
+ * @property-read int|null $admins_count
  */
 #[Fillable(['name', 'faculty', 'city', 'code', 'description', 'is_active'])]
+#[UsePolicy(DepartmentPolicy::class)]
 class Department extends Model
 {
     /** @use HasFactory<DepartmentFactory> */
@@ -61,7 +68,8 @@ class Department extends Model
 
     /**
      * The thesis settings currently in force for this department, falling back
-     * to framework defaults when the department has never been configured.
+     * to the system-wide defaults when the department has never been
+     * configured.
      */
     public function activeThesisSetting(): DepartmentThesisSetting
     {
@@ -69,6 +77,9 @@ class Department extends Model
             ->where('is_active', true)
             ->where('effective_since', '<=', now())
             ->orderByDesc('effective_since')
-            ->first() ?? new DepartmentThesisSetting(['department_id' => $this->id]);
+            ->first() ?? new DepartmentThesisSetting([
+                ...app(SystemSettings::class)->thesisDefaults(),
+                'department_id' => $this->id,
+            ]);
     }
 }

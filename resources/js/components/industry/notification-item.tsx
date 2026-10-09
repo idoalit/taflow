@@ -4,6 +4,7 @@ import {
     CheckCircle2,
     Clock,
     FileText,
+    Megaphone,
     type LucideIcon,
 } from 'lucide-react';
 import type { AppNotification, NotificationCategory } from '@/types';
@@ -13,6 +14,7 @@ const ICONS: Record<NotificationCategory, LucideIcon> = {
     schedule: CalendarDays,
     reminder: Clock,
     document: FileText,
+    announcement: Megaphone,
 };
 
 export function notificationIcon(category: NotificationCategory): LucideIcon {

@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\AuditAction;
+use App\Policies\AuditLogPolicy;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -27,6 +30,7 @@ use Illuminate\Http\Request;
     'auditable_type', 'auditable_id', 'user_id', 'action',
     'reason', 'changes', 'ip_address', 'user_agent',
 ])]
+#[UsePolicy(AuditLogPolicy::class)]
 class AuditLog extends Model
 {
     /**
@@ -56,7 +60,7 @@ class AuditLog extends Model
      */
     public static function record(
         Model $subject,
-        string $action,
+        AuditAction $action,
         ?User $user,
         ?string $reason = null,
         array $changes = [],
@@ -66,7 +70,7 @@ class AuditLog extends Model
             'auditable_type' => $subject->getMorphClass(),
             'auditable_id' => $subject->getKey(),
             'user_id' => $user?->id,
-            'action' => $action,
+            'action' => $action->value,
             'reason' => $reason,
             'changes' => $changes === [] ? null : $changes,
             'ip_address' => $request?->ip(),

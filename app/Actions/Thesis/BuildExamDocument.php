@@ -10,6 +10,7 @@ use App\Models\ExamParticipant;
 use App\Models\RevisionNote;
 use App\Models\SupervisionScore;
 use App\Models\ThesisExam;
+use App\Support\SystemSettings;
 use App\Support\Terbilang;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -26,6 +27,7 @@ final readonly class BuildExamDocument
     public function __construct(
         private ComposeFinalGrade $compose,
         private BuildVerificationQr $qr,
+        private SystemSettings $settings,
     ) {}
 
     /**
@@ -40,16 +42,17 @@ final readonly class BuildExamDocument
         $minutes = $exam->minutes;
 
         $scheduled = $exam->scheduled_at;
-        $city = $department->city ?: config('institution.city');
+        $institution = $this->settings->institution();
+        $city = $department->city ?: $institution['city'];
 
         return [
             'institution' => [
-                'name' => config('institution.name'),
-                'unit' => config('institution.unit'),
-                'address' => config('institution.address'),
-                'phone' => config('institution.phone'),
-                'website' => config('institution.website'),
-                'logo' => $this->logoDataUri(),
+                'name' => $institution['name'],
+                'unit' => $institution['unit'],
+                'address' => $institution['address'],
+                'phone' => $institution['phone'],
+                'website' => $institution['website'],
+                'logo' => $this->logoDataUri($institution['logo_file']),
             ],
             'student' => [
                 'name' => $student->user->name,
@@ -270,16 +273,8 @@ final readonly class BuildExamDocument
         ], ExamResult::cases());
     }
 
-    private function logoDataUri(): ?string
+    private function logoDataUri(?string $file): ?string
     {
-        $path = config('institution.logo_path');
-
-        if (! is_string($path) || $path === '' || ! file_exists(public_path($path))) {
-            return null;
-        }
-
-        $mime = str_ends_with(strtolower($path), '.svg') ? 'image/svg+xml' : 'image/png';
-
-        return "data:{$mime};base64,".base64_encode((string) file_get_contents(public_path($path)));
+        return $file === null ? null : SystemSettings::dataUri($file);
     }
 }

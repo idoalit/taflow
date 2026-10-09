@@ -368,6 +368,58 @@ export function PageHeader({
     );
 }
 
+/**
+ * Previous / next for a list paged on the server. The links are the
+ * paginator's own, so whatever filters are in the query string ride along.
+ */
+export function Pagination({
+    page,
+    unit,
+}: {
+    page: {
+        current_page: number;
+        last_page: number;
+        total: number;
+        from: number | null;
+        to: number | null;
+        prev_page_url: string | null;
+        next_page_url: string | null;
+    };
+    unit: string;
+}) {
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="ind-muted text-[12.5px]">
+                {page.total === 0
+                    ? `Tidak ada ${unit}`
+                    : `${page.from}–${page.to} dari ${page.total} ${unit}`}
+            </span>
+
+            {page.last_page > 1 && (
+                <div className="flex items-center gap-[var(--ind-space-2)]">
+                    {page.prev_page_url === null ? (
+                        <Btn disabled>Sebelumnya</Btn>
+                    ) : (
+                        <BtnLink href={page.prev_page_url} preserveScroll>
+                            Sebelumnya
+                        </BtnLink>
+                    )}
+                    <span className="ind-muted text-[12.5px]">
+                        Halaman {page.current_page} dari {page.last_page}
+                    </span>
+                    {page.next_page_url === null ? (
+                        <Btn disabled>Berikutnya</Btn>
+                    ) : (
+                        <BtnLink href={page.next_page_url} preserveScroll>
+                            Berikutnya
+                        </BtnLink>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function SectionHeading({ children }: { children: ReactNode }) {
     return <h6 className="mb-[var(--ind-space-3)]">{children}</h6>;
 }

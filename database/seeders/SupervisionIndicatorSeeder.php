@@ -2,31 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Thesis\ProvisionDepartment;
 use App\Models\Department;
-use App\Models\SupervisionIndicator;
 use Illuminate\Database\Seeder;
 
 /**
- * The faculty's Form Penilaian Proses Bimbingan, indicator for indicator.
- *
- * Five lines marked out of 20, which is the 100 the supervision score is worth
- * before it is weighted against the exam.
+ * The faculty's Form Penilaian Proses Bimbingan for program studi that were
+ * created before a screen provisioned it, or by a seeder. The indicators
+ * themselves live in ProvisionDepartment, which a new program studi runs
+ * through on its own.
  */
 class SupervisionIndicatorSeeder extends Seeder
 {
-    /**
-     * @var array<int, array{code: string, label: string}>
-     */
-    private const INDICATORS = [
-        ['code' => '1a', 'label' => 'Konsultasi dengan pembimbing (keteraturan, kedisiplinan, dan motivasi)'],
-        ['code' => '1b', 'label' => 'Respon terhadap saran pembimbing (kepatuhan dan keaktifan)'],
-        ['code' => '1c', 'label' => 'Kesiapan konsultasi materi (kelengkapan)'],
-        ['code' => '1d', 'label' => 'Kemampuan berdiskusi dengan pembimbing terkait laporan kasus (argumentasi)'],
-        ['code' => '2', 'label' => 'Sikap mahasiswa selama proses bimbingan (etika dan sopan santun)'],
-    ];
-
-    public const MAX_SCORE = 20;
-
     public function run(?Department $department = null): void
     {
         $departments = $department !== null
@@ -34,22 +21,7 @@ class SupervisionIndicatorSeeder extends Seeder
             : Department::query()->where('is_active', true)->get();
 
         foreach ($departments as $target) {
-            foreach (self::INDICATORS as $order => $indicator) {
-                SupervisionIndicator::updateOrCreate(
-                    ['department_id' => $target->id, 'code' => $indicator['code']],
-                    [
-                        'label' => $indicator['label'],
-                        'max_score' => self::MAX_SCORE,
-                        'order' => $order + 1,
-                        'is_active' => true,
-                    ],
-                );
-            }
+            app(ProvisionDepartment::class)->handle($target);
         }
-    }
-
-    public static function totalMaxScore(): int
-    {
-        return count(self::INDICATORS) * self::MAX_SCORE;
     }
 }

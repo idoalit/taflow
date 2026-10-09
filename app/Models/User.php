@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -105,8 +106,11 @@ class User extends Authenticatable implements PasskeyUser
             ->filter()
             ->sortBy(fn (UserRole $role): int => (int) array_search($role, UserRole::cases(), true));
 
+        // A superadmin who also administers a prodi in their own right would
+        // otherwise be offered that seat twice.
         return $this->workspaceCache = $roles
             ->flatMap(fn (UserRole $role): Collection => $this->workspacesFor($role))
+            ->unique(fn (Workspace $workspace): string => $workspace->key())
             ->values();
     }
 
@@ -138,12 +142,54 @@ class User extends Authenticatable implements PasskeyUser
     {
         $this->activeWorkspace = $workspace;
 
-        $this->setRelation(
-            'roles',
-            $this->roles()->where('name', $workspace->role->value)->get(),
-        );
+        $roles = $this->roles()->where('name', $workspace->role->value)->get();
+
+        // A superadmin sitting in a prodi's Admin Prodi seat does not hold the
+        // admin role, yet has to answer `can()` exactly as that admin would.
+        if ($roles->isEmpty() && $this->isSuperAdmin()) {
+            $roles = Role::query()
+                ->where('name', $workspace->role->value)
+                ->where('guard_name', 'web')
+                ->get();
+        }
+
+        $this->setRelation('roles', $roles);
 
         $this->forgetCachedPermissions();
+    }
+
+    /**
+     * Whether the account has no seat because the program studi it belongs to
+     * were archived — as opposed to never having been linked to one.
+     */
+    public function isShutOutByArchive(): bool
+    {
+        return $this->workspaces()->isEmpty() && (
+            $this->student?->department?->is_active === false
+            || $this->lecturer?->departments()->where('is_active', false)->exists() === true
+            || $this->departments()->where('is_active', false)->exists()
+        );
+    }
+
+    /**
+     * Strip every permission for the rest of this request, for an account
+     * whose every workspace has been closed.
+     */
+    public function useNoWorkspace(): void
+    {
+        $this->setRelation('roles', $this->roles()->getRelated()->newCollection());
+
+        $this->forgetCachedPermissions();
+    }
+
+    /**
+     * Whether the account holds the superadmin role at all, whichever seat it
+     * is currently in. Read through a fresh query for the same reason
+     * `workspaces()` is.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->roles()->where('name', UserRole::SuperAdmin->value)->exists();
     }
 
     public function workspaceFromKey(string $key): ?Workspace
@@ -165,19 +211,25 @@ class User extends Authenticatable implements PasskeyUser
      */
     private function workspacesFor(UserRole $role): Collection
     {
+        // An archived prodi offers nobody a seat except the superadmin, who has
+        // to be able to walk back in to put it right.
         return match ($role) {
-            UserRole::SuperAdmin => collect([new Workspace($role)]),
-            UserRole::Student => collect($this->student?->department === null
-                ? []
-                : [new Workspace($role, $this->student->department)]),
+            UserRole::SuperAdmin => collect([new Workspace($role)])->concat(
+                Department::query()->orderBy('name')->get()
+                    ->map(fn (Department $department): Workspace => new Workspace(UserRole::Admin, $department)),
+            ),
+            UserRole::Student => collect($this->student?->department?->is_active === true
+                ? [new Workspace($role, $this->student->department)]
+                : []),
             // A dosen's home prodi comes first; an admin's are simply ordered by
             // name, since none of them is primary.
             UserRole::Lecturer => ($this->lecturer?->departments()
+                ->where('is_active', true)
                 ->orderByPivot('is_primary', 'desc')
                 ->orderBy('name')
                 ->get() ?? collect())
                 ->map(fn (Department $department): Workspace => new Workspace($role, $department)),
-            UserRole::Admin => $this->departments()->orderBy('name')->get()
+            UserRole::Admin => $this->departments()->where('is_active', true)->orderBy('name')->get()
                 ->map(fn (Department $department): Workspace => new Workspace($role, $department)),
         };
     }

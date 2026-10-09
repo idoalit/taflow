@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProposalExam;
 use App\Models\ResearchExam;
 use App\Models\ThesisExam;
+use App\Support\SystemSettings;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,7 +18,7 @@ use Inertia\Response;
  */
 class DocumentVerificationController extends Controller
 {
-    public function show(string $token): Response
+    public function show(string $token, SystemSettings $settings): Response
     {
         $exam = $this->findByToken($token);
 
@@ -40,7 +41,7 @@ class DocumentVerificationController extends Controller
                 'final_score' => $minutes?->final_score,
                 'letter' => $minutes?->letter,
                 'released_at' => $exam->released_at?->translatedFormat('d F Y'),
-                'institution' => config('institution.name'),
+                'institution' => $settings->institution()['name'],
             ],
         ]);
     }

@@ -14,12 +14,16 @@ use App\Enums\SupervisorRole;
 use App\Enums\UserRole;
 use App\Http\Resources\GuidanceSessionSummaryResource;
 use App\Http\Resources\ProposalSummaryResource;
+use App\Models\Department;
 use App\Models\Lecturer;
 use App\Models\ProposalExam;
 use App\Models\ProposalExamRequest;
+use App\Models\ResearchExam;
 use App\Models\Rubric;
 use App\Models\Student;
 use App\Models\ThesisProposal;
+use App\Models\User;
+use App\Support\Workspace;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -42,6 +46,13 @@ class DashboardController extends Controller
         // dosen record, an admin never assigned a prodi — cannot be served any
         // dashboard, and saying so beats an empty one.
         abort_if(
+            $user->isShutOutByArchive(),
+            403,
+            'Program studi Anda sudah dinonaktifkan, sehingga tidak ada workspace yang dapat dibuka. '
+            .'Hubungi superadmin apabila ini keliru.',
+        );
+
+        abort_if(
             $user->activeWorkspace() === null && $user->roles()->exists(),
             403,
             'Akun Anda memiliki peran '.$user->roles()->pluck('name')->implode(', ')
@@ -53,6 +64,7 @@ class DashboardController extends Controller
             UserRole::Student => $this->studentDashboard($request),
             UserRole::Lecturer => $this->lecturerDashboard($request),
             UserRole::Admin => $this->adminDashboard($request),
+            UserRole::SuperAdmin => $this->superAdminDashboard($request),
             default => Inertia::render('dashboard', [
                 'greeting' => $this->greeting($request),
             ]),
@@ -125,6 +137,51 @@ class DashboardController extends Controller
                     ->count()],
             ],
             'alerts' => $alerts,
+        ]);
+    }
+
+    /**
+     * The whole institution at a glance: how many program studi there are, who
+     * is in them, and the ones nobody is running.
+     */
+    private function superAdminDashboard(Request $request): Response
+    {
+        $departments = Department::query()
+            ->withCount(['students', 'lecturers', 'admins'])
+            ->orderBy('name')
+            ->get();
+
+        $unstaffed = $departments
+            ->filter(fn (Department $department): bool => $department->is_active && $department->admins_count === 0);
+
+        return Inertia::render('superadmin/dashboard', [
+            'greeting' => $this->greeting($request),
+            'kpis' => [
+                ['label' => 'Program Studi Aktif', 'value' => (string) $departments->where('is_active', true)->count()],
+                ['label' => 'Total Pengguna', 'value' => (string) User::query()->count()],
+                ['label' => 'Admin Prodi', 'value' => (string) User::role(UserRole::Admin->value)->count()],
+                ['label' => 'Dosen', 'value' => (string) Lecturer::query()->count()],
+                ['label' => 'Mahasiswa', 'value' => (string) Student::query()->count()],
+                ['label' => 'Ujian Terjadwal', 'value' => (string) (
+                    ProposalExam::query()->where('status', ExamStatus::Scheduled)->count()
+                    + ResearchExam::query()->where('status', ExamStatus::Scheduled)->count()
+                )],
+            ],
+            'alerts' => $unstaffed->map(fn (Department $department): array => [
+                'text' => "{$department->name} belum memiliki Admin Prodi",
+                'href' => route('superadmin.departments.show', $department),
+            ])->values(),
+            'departments' => $departments->map(fn (Department $department): array => [
+                'id' => $department->id,
+                'name' => $department->name,
+                'code' => $department->code,
+                'is_active' => $department->is_active,
+                'students' => $department->students_count,
+                'lecturers' => $department->lecturers_count,
+                'admins' => $department->admins_count,
+                // The seat a superadmin steps into to run this prodi.
+                'workspace' => (new Workspace(UserRole::Admin, $department))->key(),
+            ])->values(),
         ]);
     }
 

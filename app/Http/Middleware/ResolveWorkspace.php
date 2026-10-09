@@ -35,6 +35,10 @@ class ResolveWorkspace
 
         if ($workspace !== null) {
             $user->useWorkspace($workspace);
+        } elseif ($user->isShutOutByArchive()) {
+            // Every prodi this account belonged to has been archived. Its roles
+            // must not go on answering `can()` for a workspace that is closed.
+            $user->useNoWorkspace();
         }
 
         return $next($request);

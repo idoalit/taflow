@@ -27,6 +27,7 @@ void createInertiaApp({
                 return [IndustryLayout, SettingsLayout];
             case name.startsWith('thesis/'):
             case name.startsWith('admin/'):
+            case name.startsWith('superadmin/'):
                 return IndustryLayout;
             default:
                 return AppLayout;
