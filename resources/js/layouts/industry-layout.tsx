@@ -6,6 +6,7 @@ import {
     CommandPalette,
     type PaletteScope,
 } from '@/components/industry/command-palette';
+import { ImpersonationBanner } from '@/components/industry/impersonation-banner';
 import { NotificationBell } from '@/components/industry/notification-bell';
 import { WorkspaceSwitcher } from '@/components/industry/workspace-switcher';
 import { IndustrySidebar } from '@/layouts/industry/sidebar';
@@ -126,6 +127,7 @@ export default function IndustryLayout({
             )}
 
             <div className="flex min-w-0 flex-1 flex-col">
+                <ImpersonationBanner />
                 <header
                     className="flex h-14 flex-shrink-0 items-center justify-between gap-4 px-[clamp(16px,4vw,32px)]"
                     style={{ borderBottom: '1px solid var(--ind-divider)' }}

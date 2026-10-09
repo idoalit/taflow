@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentVerificationController;
+use App\Http\Controllers\SuperAdmin\ImpersonationController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,10 @@ Route::get('verifikasi/{token}', [DocumentVerificationController::class, 'show']
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('workspace', [WorkspaceController::class, 'update'])->name('workspace.update');
+
+    // Outside the superadmin routes on purpose: it is called from the session
+    // of the account being looked at, which is never a superadmin's.
+    Route::delete('impersonation', [ImpersonationController::class, 'destroy'])->name('impersonation.destroy');
 });
 
 require __DIR__.'/admin.php';

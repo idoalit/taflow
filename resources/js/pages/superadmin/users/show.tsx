@@ -1,4 +1,5 @@
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
+import { Eye } from 'lucide-react';
 import { useState } from 'react';
 import { DepartmentChecklist } from '@/components/industry/department-checklist';
 import {
@@ -18,6 +19,7 @@ import {
     Tag,
 } from '@/components/industry/ui';
 import { destroy, index, update } from '@/routes/superadmin/users';
+import { store as startImpersonating } from '@/routes/superadmin/users/impersonation';
 import { store as sendInvitation } from '@/routes/superadmin/users/invitation';
 import { update as updateRoles } from '@/routes/superadmin/users/roles';
 import type { AccountRow, DepartmentOption } from '@/types';
@@ -33,18 +35,21 @@ type Props = {
         created_at: string | null;
     };
     deletion: { allowed: boolean; reason: string | null };
+    impersonable: { allowed: boolean; reason: string | null };
     departments: DepartmentOption[];
 };
 
 export default function SuperAdminUserShow({
     account,
     deletion,
+    impersonable,
     departments,
 }: Props) {
     setLayoutProps({ title: 'Detail Akun' });
 
     const [confirmingDelete, setConfirmingDelete] = useState(false);
     const [inviting, setInviting] = useState(false);
+    const [impersonating, setImpersonating] = useState(false);
 
     const profile = useForm({ name: account.name, email: account.email });
 
@@ -259,6 +264,35 @@ export default function SuperAdminUserShow({
                         </>
                     )}
                 </form>
+
+                <div className="ind-section">
+                    <h6>Lihat sebagai Akun Ini</h6>
+                    <p className="ind-muted m-0 mb-[var(--ind-space-3)] text-[12.5px]">
+                        {impersonable.allowed
+                            ? 'Buka aplikasi persis seperti yang dilihat pemilik akun ini, untuk menelusuri apa yang tampil atau tidak tampil baginya. Selama itu tidak ada yang dapat diubah, dan awal serta akhirnya tercatat di Log Aktivitas.'
+                            : (impersonable.reason ??
+                              'Akun ini tidak dapat dilihat dengan cara ini.')}
+                    </p>
+                    <Btn
+                        className="self-start"
+                        disabled={!impersonable.allowed || impersonating}
+                        onClick={() =>
+                            router.post(
+                                startImpersonating(account.id).url,
+                                {},
+                                {
+                                    onStart: () => setImpersonating(true),
+                                    onFinish: () => setImpersonating(false),
+                                },
+                            )
+                        }
+                    >
+                        <Eye size={15} strokeWidth={1.5} />
+                        {impersonating
+                            ? 'Membuka...'
+                            : `Lihat sebagai ${account.name}`}
+                    </Btn>
+                </div>
 
                 <div className="ind-section">
                     <h6>Tautan Aktivasi</h6>

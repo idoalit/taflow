@@ -18,6 +18,8 @@ declare module '@inertiajs/core' {
                 error: string | null;
                 importResult: ImportResult | null;
             };
+            /** Set only while a superadmin is looking through another account. */
+            impersonation: { impersonator: string } | null;
             thesis: ThesisSettings | null;
             notificationFeed: NotificationFeed | null;
             sidebarOpen: boolean;

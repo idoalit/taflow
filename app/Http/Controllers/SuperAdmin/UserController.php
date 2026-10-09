@@ -157,6 +157,7 @@ class UserController extends Controller
 
         $roles = $this->heldRoles($user);
         $deletion = Gate::inspect('delete', $user);
+        $impersonation = Gate::inspect('impersonate', $user);
 
         return Inertia::render('superadmin/users/show', [
             'account' => [
@@ -178,6 +179,13 @@ class UserController extends Controller
             'deletion' => [
                 'allowed' => $deletion->allowed(),
                 'reason' => $deletion->message(),
+            ],
+            // Not `impersonation`: that is the shared prop the shell reads to
+            // know whether a superadmin is looking through an account, and a
+            // page prop of the same name would overwrite it on this screen.
+            'impersonable' => [
+                'allowed' => $impersonation->allowed(),
+                'reason' => $impersonation->message(),
             ],
             'departments' => $this->departmentOptions(),
         ]);

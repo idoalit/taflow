@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronsUpDown, LogOut, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { leaveImpersonation } from '@/components/industry/impersonation-banner';
 import { Avatar } from '@/components/industry/ui';
 import { brandTagline, navigationFor } from '@/layouts/industry/navigation';
 import { logout } from '@/routes';
@@ -147,15 +148,27 @@ export function IndustrySidebar({ onNavigate }: { onNavigate?: () => void }) {
                             <UserRound size={16} strokeWidth={1.5} />
                             <span>Profil Saya</span>
                         </Link>
-                        <Link
-                            href={logout()}
-                            as="button"
-                            className="ind-nav-item"
-                            style={{ color: 'var(--ind-accent-900)' }}
-                        >
-                            <LogOut size={16} strokeWidth={1.5} />
-                            <span>Keluar</span>
-                        </Link>
+                        {page.props.impersonation === null ? (
+                            <Link
+                                href={logout()}
+                                as="button"
+                                className="ind-nav-item"
+                                style={{ color: 'var(--ind-accent-900)' }}
+                            >
+                                <LogOut size={16} strokeWidth={1.5} />
+                                <span>Keluar</span>
+                            </Link>
+                        ) : (
+                            <button
+                                type="button"
+                                className="ind-nav-item"
+                                style={{ color: 'var(--ind-accent-900)' }}
+                                onClick={() => leaveImpersonation()}
+                            >
+                                <LogOut size={16} strokeWidth={1.5} />
+                                <span>Kembali ke Akun Saya</span>
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

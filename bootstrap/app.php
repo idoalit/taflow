@@ -3,6 +3,7 @@
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveWorkspace;
+use App\Http\Middleware\RestrictImpersonation;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,6 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Before HandleInertiaRequests, which shares the active workspace.
             ResolveWorkspace::class,
             HandleInertiaRequests::class,
+            // Inside HandleInertiaRequests, so the redirect it answers a
+            // refused write with is adjusted for Inertia on the way out.
+            RestrictImpersonation::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
     })

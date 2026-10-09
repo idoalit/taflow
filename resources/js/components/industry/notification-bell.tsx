@@ -13,7 +13,10 @@ import type { AppNotification } from '@/types';
  * Opening a notification marks it read, which is what the badge counts down.
  */
 export function NotificationBell() {
-    const feed = usePage().props.notificationFeed;
+    const { notificationFeed: feed, impersonation } = usePage().props;
+    // Marking as read is the owner's to do. A superadmin looking through the
+    // account reads without leaving that trace, and is not offered the button.
+    const canMarkRead = impersonation === null;
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<AppNotification | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -42,7 +45,7 @@ export function NotificationBell() {
         setSelected(notification);
         setOpen(false);
 
-        if (notification.unread) {
+        if (notification.unread && canMarkRead) {
             router.post(
                 read(notification.id).url,
                 {},
@@ -88,7 +91,7 @@ export function NotificationBell() {
 
                         <div className="flex items-center justify-between px-2 py-[6px]">
                             <span className="ind-eyebrow">Notifikasi</span>
-                            {feed.unread > 0 && (
+                            {feed.unread > 0 && canMarkRead && (
                                 <button
                                     type="button"
                                     onClick={() =>

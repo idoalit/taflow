@@ -4,6 +4,7 @@ use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\BroadcastController;
 use App\Http\Controllers\SuperAdmin\DepartmentAdminController;
 use App\Http\Controllers\SuperAdmin\DepartmentController;
+use App\Http\Controllers\SuperAdmin\ImpersonationController;
 use App\Http\Controllers\SuperAdmin\RoleController;
 use App\Http\Controllers\SuperAdmin\SystemSettingController;
 use App\Http\Controllers\SuperAdmin\UserController;
@@ -46,6 +47,9 @@ Route::middleware(['auth', 'verified', EnsureSuperAdminWorkspace::class])
         });
 
         Route::put('users/{user}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
+
+        Route::post('users/{user}/impersonation', [ImpersonationController::class, 'store'])
+            ->name('users.impersonation.store');
 
         // The activation link is mail, so it is throttled like any other.
         Route::post('users/{user}/invitation', [UserInvitationController::class, 'store'])

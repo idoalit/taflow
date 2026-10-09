@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Http\Resources\NotificationResource;
 use App\Models\User;
+use App\Support\Impersonation;
 use App\Support\Workspace;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -45,6 +46,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $this->authUser($this->currentUser($request)),
             ],
+            // Null for everybody but a superadmin looking through another
+            // account, where the shell has to say so on every page.
+            'impersonation' => fn (): ?array => $this->impersonation($request),
             'thesis' => $this->thesisSettings($this->currentUser($request)),
             'notificationFeed' => $this->notificationFeed($this->currentUser($request)),
             'flash' => [
@@ -94,6 +98,16 @@ class HandleInertiaRequests extends Middleware
     private function currentUser(Request $request): ?User
     {
         return $request->hasSession() ? $request->user() : null;
+    }
+
+    /**
+     * @return array{impersonator: string}|null
+     */
+    private function impersonation(Request $request): ?array
+    {
+        $impersonator = Impersonation::impersonator($request);
+
+        return $impersonator === null ? null : ['impersonator' => $impersonator->name];
     }
 
     private function flash(Request $request, string $key): ?string

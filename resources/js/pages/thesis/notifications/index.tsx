@@ -1,4 +1,4 @@
-import { Head, router, setLayoutProps } from '@inertiajs/react';
+import { Head, router, setLayoutProps, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { BlueprintCorners } from '@/components/industry/blueprint';
 import { NotificationDetail } from '@/components/industry/notification-detail';
@@ -15,6 +15,8 @@ export default function NotificationIndex({
     setLayoutProps({ title: 'Notifikasi' });
 
     const [selected, setSelected] = useState<AppNotification | null>(null);
+    // A superadmin looking through this account reads without marking as read.
+    const canMarkRead = usePage().props.impersonation === null;
     const unread = notifications.filter(
         (notification) => notification.unread,
     ).length;
@@ -22,7 +24,7 @@ export default function NotificationIndex({
     const openDetail = (notification: AppNotification) => {
         setSelected(notification);
 
-        if (notification.unread) {
+        if (notification.unread && canMarkRead) {
             router.post(
                 read(notification.id).url,
                 {},
@@ -40,7 +42,7 @@ export default function NotificationIndex({
                     <p className="ind-muted m-0 text-[14px]">
                         Semua pembaruan dan pengingat terkait aktivitas Anda.
                     </p>
-                    {unread > 0 && (
+                    {unread > 0 && canMarkRead && (
                         <Btn
                             onClick={() =>
                                 router.post(

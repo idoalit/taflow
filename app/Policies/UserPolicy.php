@@ -34,6 +34,33 @@ class UserPolicy
     }
 
     /**
+     * Looking at the application through another account. Never another
+     * superadmin's — that would be one superadmin borrowing another's
+     * authority — and never an account with no workspace, which has no screen
+     * to show and no way back out of.
+     */
+    public function impersonate(User $user, User $target): Response
+    {
+        if (! $user->can('user.manage')) {
+            return Response::deny('Hanya superadmin yang dapat melihat sebagai akun lain.');
+        }
+
+        if ($user->is($target)) {
+            return Response::deny('Ini akun Anda sendiri.');
+        }
+
+        if ($target->isSuperAdmin()) {
+            return Response::deny('Akun superadmin lain tidak dapat dilihat dengan cara ini.');
+        }
+
+        if ($target->workspaces()->isEmpty()) {
+            return Response::deny('Akun ini belum memiliki workspace yang dapat dibuka, jadi belum ada yang bisa dilihat.');
+        }
+
+        return Response::allow();
+    }
+
+    /**
      * Removing an account takes its proposals, guidance sessions, logbook and
      * exam records with it, so it is never self-service. A superadmin may
      * remove anyone whose removal harms nobody else; a program admin only the
