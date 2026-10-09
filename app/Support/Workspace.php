@@ -41,7 +41,7 @@ final readonly class Workspace
     }
 
     /**
-     * @return array{key: string, role: string, role_label: string, department: string|null, label: string}
+     * @return array{key: string, role: string, role_label: string, department: string|null, department_code: string|null, label: string}
      */
     public function toArray(): array
     {
@@ -50,6 +50,7 @@ final readonly class Workspace
             'role' => $this->role->value,
             'role_label' => $this->role->label(),
             'department' => $this->department?->name,
+            'department_code' => $this->department?->code,
             'label' => $this->label(),
         ];
     }

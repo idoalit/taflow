@@ -34,6 +34,8 @@ class DashboardController extends Controller
 {
     use FormatsIndonesianDates;
 
+    private const ALERTS_NAMED = 3;
+
     /**
      * One entry point, four dashboards. Each role gets the summary its design
      * calls for, built from the same underlying models.
@@ -167,10 +169,17 @@ class DashboardController extends Controller
                     + ResearchExam::query()->where('status', ExamStatus::Scheduled)->count()
                 )],
             ],
-            'alerts' => $unstaffed->map(fn (Department $department): array => [
-                'text' => "{$department->name} belum memiliki Admin Prodi",
-                'href' => route('superadmin.departments.show', $department),
-            ])->values(),
+            // Named one by one while that is still a short list to read; past
+            // that the dashboard says how many and sends the reader to the list.
+            'alerts' => $unstaffed->count() > self::ALERTS_NAMED
+                ? [[
+                    'text' => "{$unstaffed->count()} program studi belum memiliki Admin Prodi",
+                    'href' => route('superadmin.departments.index'),
+                ]]
+                : $unstaffed->map(fn (Department $department): array => [
+                    'text' => "{$department->name} belum memiliki Admin Prodi",
+                    'href' => route('superadmin.departments.show', $department),
+                ])->values(),
             'departments' => $departments->map(fn (Department $department): array => [
                 'id' => $department->id,
                 'name' => $department->name,

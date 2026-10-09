@@ -1,17 +1,21 @@
 import { usePage } from '@inertiajs/react';
-import { Menu } from 'lucide-react';
+import { Menu, Search } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
+import {
+    CommandPalette,
+    type PaletteScope,
+} from '@/components/industry/command-palette';
 import { NotificationBell } from '@/components/industry/notification-bell';
-import { Tag } from '@/components/industry/ui';
+import { WorkspaceSwitcher } from '@/components/industry/workspace-switcher';
 import { IndustrySidebar } from '@/layouts/industry/sidebar';
 
 const MOBILE_BREAKPOINT = 900;
 
 /**
  * The shell every FiPro screen sits in: a persistent sidebar on desktop, a
- * drawer on narrow screens, and a header carrying the page title and the
- * "viewing as" role badge.
+ * drawer on narrow screens, and a header carrying the page title, the search
+ * that opens the palette, and the workspace the person is working in.
  */
 export default function IndustryLayout({
     title,
@@ -21,10 +25,41 @@ export default function IndustryLayout({
     children: ReactNode;
 }) {
     const page = usePage();
-    const user = page.props.auth.user;
     const flash = page.props.flash;
     const [isMobile, setIsMobile] = useState(false);
     const [navOpen, setNavOpen] = useState(false);
+    const [palette, setPalette] = useState<PaletteScope | null>(null);
+    const [shortcut, setShortcut] = useState('Ctrl K');
+
+    // The key is named as it is printed on the keyboard in front of the
+    // person, which only the browser knows.
+    useEffect(() => {
+        if (/Mac|iPhone|iPad/.test(navigator.userAgent)) {
+            setShortcut('⌘K');
+        }
+    }, []);
+
+    useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            const chord =
+                (event.metaKey || event.ctrlKey) &&
+                !event.altKey &&
+                !event.shiftKey &&
+                event.key.toLowerCase() === 'k';
+
+            if (!chord) {
+                return;
+            }
+
+            // Otherwise the browser takes it for its own address-bar search.
+            event.preventDefault();
+            setPalette((current) => (current === null ? 'all' : null));
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, []);
 
     useEffect(() => {
         const onResize = () =>
@@ -108,13 +143,32 @@ export default function IndustryLayout({
                         )}
                         <h6 className="m-0 truncate">{title}</h6>
                     </div>
-                    <div className="flex flex-shrink-0 items-center gap-3">
-                        {user.role_label && !isMobile && (
-                            <Tag
-                                label={`Melihat sebagai · ${user.role_label}`}
-                                tone="neutral"
-                            />
+                    <div className="flex min-w-0 flex-shrink-0 items-center gap-[10px]">
+                        {isMobile ? (
+                            <button
+                                type="button"
+                                aria-label="Cari menu atau workspace"
+                                onClick={() => setPalette('all')}
+                                className="ind-btn ind-btn-ghost ind-btn-icon"
+                            >
+                                <Search size={18} strokeWidth={1.5} />
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                aria-label="Cari menu atau workspace"
+                                onClick={() => setPalette('all')}
+                                className="ind-btn ind-btn-secondary h-[30px] gap-[8px] px-[10px] text-[12px]"
+                            >
+                                <Search size={14} strokeWidth={1.5} />
+                                <span className="ind-muted">Cari...</span>
+                                <kbd className="ind-kbd">{shortcut}</kbd>
+                            </button>
                         )}
+                        <WorkspaceSwitcher
+                            compact={isMobile}
+                            onOpenPalette={() => setPalette('workspace')}
+                        />
                         <NotificationBell />
                     </div>
                 </header>
@@ -123,6 +177,8 @@ export default function IndustryLayout({
                     {children}
                 </div>
             </div>
+
+            <CommandPalette scope={palette} onClose={() => setPalette(null)} />
         </div>
     );
 }

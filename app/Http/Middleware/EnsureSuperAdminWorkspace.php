@@ -20,7 +20,7 @@ class EnsureSuperAdminWorkspace
             $request->user()?->activeWorkspace()?->role !== UserRole::SuperAdmin,
             403,
             'Halaman ini hanya tersedia pada workspace Superadmin. '
-            .'Gunakan menu "Ganti Workspace" di bawah sidebar untuk berpindah.',
+            .'Gunakan pemilih workspace di kanan atas untuk berpindah.',
         );
 
         return $next($request);

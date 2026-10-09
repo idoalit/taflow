@@ -1,11 +1,11 @@
-import { router } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { LogIn } from 'lucide-react';
 import { Btn } from '@/components/industry/ui';
-import { update as updateWorkspace } from '@/routes/workspace';
+import { switchWorkspace } from '@/lib/workspace';
 
 /**
  * Steps the superadmin into a program studi's Admin Prodi seat. It is the same
- * workspace switch the sidebar makes, offered where the prodi is being looked
+ * workspace switch the header makes, offered where the prodi is being looked
  * at; the way back is the switcher's "Superadmin" entry.
  */
 export function EnterDepartment({
@@ -19,6 +19,8 @@ export function EnterDepartment({
     variant?: 'primary' | 'secondary';
     compact?: boolean;
 }) {
+    const userId = usePage().props.auth.user.id;
+
     return (
         <Btn
             variant={variant}
@@ -27,11 +29,7 @@ export function EnterDepartment({
                 // Inside a clickable table row, entering must not also open it.
                 event.stopPropagation();
 
-                router.post(
-                    updateWorkspace().url,
-                    { workspace },
-                    { preserveState: false },
-                );
+                switchWorkspace(workspace, userId);
             }}
         >
             <LogIn size={15} strokeWidth={1.5} />

@@ -21,7 +21,7 @@ trait ScopesToDepartment
             $workspace === null || $workspace->role !== UserRole::Admin || $workspace->department === null,
             403,
             'Halaman ini hanya tersedia pada workspace Admin Program Studi. '
-            .'Gunakan menu "Ganti Workspace" di bawah sidebar untuk berpindah.',
+            .'Gunakan pemilih workspace di kanan atas untuk berpindah.',
         );
 
         return $workspace->department;

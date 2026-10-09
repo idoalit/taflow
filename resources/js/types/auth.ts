@@ -6,6 +6,7 @@ export type Workspace = {
     role: UserRole;
     role_label: string;
     department: string | null;
+    department_code: string | null;
     label: string;
 };
 

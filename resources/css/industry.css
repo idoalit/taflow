@@ -728,6 +728,63 @@
         filter: brightness(0.9);
     }
 
+    /* ── Command palette ───────────────────────────────────────────────────── */
+
+    /* Anchored near the top rather than centred: the list grows and shrinks as
+       the person types, and a centred box would move the field under them. */
+    .ind-palette {
+        position: fixed;
+        top: min(14vh, 120px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 96;
+        width: min(560px, calc(100% - 32px));
+        display: flex;
+        flex-direction: column;
+        background: var(--ind-bg);
+        border: 1px solid var(--ind-divider);
+        box-shadow: var(--ind-shadow-lg);
+    }
+    .ind-palette-list {
+        max-height: min(52vh, 420px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 6px;
+    }
+    .ind-palette-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 7px 8px;
+        border: none;
+        background: transparent;
+        color: var(--ind-text);
+        font-family: var(--ind-font-body);
+        font-size: 14px;
+        text-align: left;
+        cursor: pointer;
+    }
+    .ind-palette-option[data-active='true'] {
+        background: var(--ind-accent-100);
+    }
+    .ind-palette-option svg {
+        flex-shrink: 0;
+    }
+    /* A key the person can press, as it is printed on the key. */
+    .ind-kbd {
+        display: inline-flex;
+        align-items: center;
+        min-height: 18px;
+        padding: 0 5px;
+        border: 1px solid var(--ind-divider);
+        font-family: var(--ind-font-body);
+        font-size: 11px;
+        line-height: 1;
+        white-space: nowrap;
+        color: color-mix(in srgb, var(--ind-text) 65%, transparent);
+    }
+
     /* ── Scrollbars ────────────────────────────────────────────────────────── */
 
     /* Scrolling inside a panel is legitimate on a short window; what is not is

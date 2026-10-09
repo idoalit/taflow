@@ -1,11 +1,10 @@
-import { Link, router, usePage } from '@inertiajs/react';
-import { Check, ChevronsUpDown, LogOut, UserRound } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { ChevronsUpDown, LogOut, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Avatar } from '@/components/industry/ui';
 import { brandTagline, navigationFor } from '@/layouts/industry/navigation';
 import { logout } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
-import { update as updateWorkspace } from '@/routes/workspace';
 
 /**
  * Highlight the current item, including when the user has drilled into a
@@ -119,9 +118,7 @@ export function IndustrySidebar({ onNavigate }: { onNavigate?: () => void }) {
                             {user.name}
                         </span>
                         <span className="ind-muted block truncate text-[11px]">
-                            {user.workspace?.label ??
-                                user.role_label ??
-                                'Pengguna'}
+                            {user.role_label ?? 'Pengguna'}
                         </span>
                     </span>
                     <ChevronsUpDown size={16} strokeWidth={1.5} />
@@ -140,71 +137,6 @@ export function IndustrySidebar({ onNavigate }: { onNavigate?: () => void }) {
                         <i className="ind-corner tr" />
                         <i className="ind-corner bl" />
                         <i className="ind-corner br" />
-                        {user.workspaces.length > 1 && (
-                            <>
-                                <div className="ind-eyebrow px-2 py-[6px]">
-                                    Ganti Workspace
-                                </div>
-                                {/* A superadmin holds a seat in every prodi, so
-                                    the list scrolls rather than pushing the
-                                    account links off the screen. */}
-                                <div className="max-h-[40vh] overflow-y-auto">
-                                    {user.workspaces.map((workspace) => {
-                                        const active =
-                                            workspace.key ===
-                                            user.workspace?.key;
-
-                                        return (
-                                            <button
-                                                key={workspace.key}
-                                                type="button"
-                                                className="ind-nav-item w-full cursor-pointer border-0 text-left"
-                                                style={{
-                                                    background: active
-                                                        ? 'var(--ind-accent-100)'
-                                                        : 'transparent',
-                                                }}
-                                                onClick={() => {
-                                                    setAccountOpen(false);
-                                                    onNavigate?.();
-
-                                                    if (active) {
-                                                        return;
-                                                    }
-
-                                                    router.post(
-                                                        updateWorkspace().url,
-                                                        {
-                                                            workspace:
-                                                                workspace.key,
-                                                        },
-                                                        {
-                                                            preserveState: false,
-                                                        },
-                                                    );
-                                                }}
-                                            >
-                                                <span className="min-w-0 flex-1 truncate">
-                                                    {workspace.label}
-                                                </span>
-                                                {active && (
-                                                    <Check
-                                                        size={15}
-                                                        strokeWidth={1.5}
-                                                    />
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                                <div
-                                    className="my-[var(--ind-space-2)] border-t"
-                                    style={{
-                                        borderTopColor: 'var(--ind-divider)',
-                                    }}
-                                />
-                            </>
-                        )}
 
                         <div className="ind-eyebrow px-2 py-[6px]">Akun</div>
                         <Link
