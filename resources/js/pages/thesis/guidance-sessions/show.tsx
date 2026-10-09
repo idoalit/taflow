@@ -1,5 +1,11 @@
 import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
-import { ArrowDown, MessageSquare } from 'lucide-react';
+import {
+    ArrowDown,
+    CalendarDays,
+    MapPin,
+    MessageSquare,
+    Video,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { BlueprintCorners } from '@/components/industry/blueprint';
 import {
@@ -314,6 +320,8 @@ export default function GuidanceSessionShow({ session, can }: Props) {
                             </div>
                         ) : (
                             <>
+                                <MeetingCard session={session} />
+
                                 {session.document && (
                                     <Card className="flex-row items-center">
                                         <DocumentLink
@@ -324,16 +332,19 @@ export default function GuidanceSessionShow({ session, can }: Props) {
                                     </Card>
                                 )}
 
-                                {session.notes && (
-                                    <div className="ind-section">
-                                        <h6 className="ind-muted">
-                                            Catatan Awal
-                                        </h6>
+                                <div className="ind-section">
+                                    <h6 className="ind-muted">Catatan Awal</h6>
+                                    {session.notes ? (
                                         <p className="m-0 whitespace-pre-line">
                                             {session.notes}
                                         </p>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <p className="ind-muted m-0 text-[13px]">
+                                            Tidak ada catatan awal untuk sesi
+                                            ini.
+                                        </p>
+                                    )}
+                                </div>
                             </>
                         )}
 
@@ -395,29 +406,6 @@ export default function GuidanceSessionShow({ session, can }: Props) {
                                     label="Target Pembimbing"
                                     value={session.target_type_label}
                                 />
-                                {!isAsync && session.meeting_type_label && (
-                                    <>
-                                        <Info
-                                            label="Jenis Pertemuan"
-                                            value={session.meeting_type_label}
-                                        />
-                                        {session.location_value && (
-                                            <Info
-                                                label={
-                                                    session.location_label ??
-                                                    'Lokasi'
-                                                }
-                                                value={session.location_value}
-                                            />
-                                        )}
-                                        {session.scheduled_at && (
-                                            <Info
-                                                label="Jadwal"
-                                                value={session.scheduled_at}
-                                            />
-                                        )}
-                                    </>
-                                )}
                             </div>
                         </div>
 
@@ -599,6 +587,86 @@ export default function GuidanceSessionShow({ session, can }: Props) {
                 </DialogContent>
             </Dialog>
         </>
+    );
+}
+
+/**
+ * What stands between a tatap muka session being booked and being done, said
+ * in a sentence — so the page says where things are even before anybody has
+ * written a note on it.
+ */
+const NEXT_STEP: Partial<Record<GuidanceSessionDetail['status'], string>> = {
+    scheduled:
+        'Pertemuan belum berlangsung. Setelah bertemu, pembimbing menandai sesi ini selesai dan menuliskan hasilnya di halaman ini.',
+    ongoing:
+        'Jadwal pertemuan sudah tiba. Sesi ini menunggu pembimbing menandainya selesai dan menuliskan hasilnya.',
+};
+
+/**
+ * A tatap muka session is, before anything else, an appointment: when and
+ * where. That is the first thing either side opens this page to check, so it
+ * leads the page rather than sitting among the details beside it.
+ */
+function MeetingCard({ session }: { session: GuidanceSessionDetail }) {
+    const online = session.meeting_type === 'online_meeting';
+    const PlaceIcon = online ? Video : MapPin;
+    const place = session.location_value;
+    // Only an address a browser would open is made clickable.
+    const link = online && place !== null && /^https?:\/\//i.test(place);
+    const nextStep = NEXT_STEP[session.status];
+
+    return (
+        <Card>
+            <CardKicker>Pertemuan</CardKicker>
+
+            <div className="flex items-start gap-[10px]">
+                <CalendarDays
+                    size={18}
+                    strokeWidth={1.5}
+                    className="mt-[2px] flex-shrink-0"
+                    style={{ color: 'var(--ind-accent-700)' }}
+                />
+                <div className="ind-card-title">
+                    {session.scheduled_at ?? 'Jadwal belum ditentukan'}
+                </div>
+            </div>
+
+            <div className="flex items-start gap-[10px]">
+                <PlaceIcon
+                    size={18}
+                    strokeWidth={1.5}
+                    className="mt-[1px] flex-shrink-0"
+                    style={{ color: 'var(--ind-neutral-600)' }}
+                />
+                <div className="min-w-0">
+                    <div className="text-[13.5px] font-semibold break-words">
+                        {place === null ? (
+                            'Tempat belum ditentukan'
+                        ) : link ? (
+                            <a href={place} target="_blank" rel="noreferrer">
+                                {place}
+                            </a>
+                        ) : (
+                            place
+                        )}
+                    </div>
+                    {session.meeting_type_label && (
+                        <div className="ind-muted text-[12px]">
+                            {session.meeting_type_label}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {nextStep && (
+                <p
+                    className="ind-muted m-0 pt-[var(--ind-space-2)] text-[12.5px]"
+                    style={{ borderTop: '1px solid var(--ind-divider)' }}
+                >
+                    {nextStep}
+                </p>
+            )}
+        </Card>
     );
 }
 

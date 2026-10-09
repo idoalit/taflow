@@ -133,6 +133,7 @@ export type GuidanceSessionDetail = GuidanceSessionSummary & {
     notes: string | null;
     feedback: string | null;
     completion_notes: string | null;
+    meeting_type: 'offline' | 'online_meeting' | null;
     meeting_type_label: string | null;
     location_label: string | null;
     location_value: string | null;

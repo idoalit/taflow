@@ -22,6 +22,7 @@ class GuidanceSessionDetailResource extends GuidanceSessionSummaryResource
             'feedback' => $this->feedback,
             'completion_notes' => $this->completion_notes,
             'target_type_label' => $this->target_type->label(),
+            'meeting_type' => $this->meeting_type?->value,
             'meeting_type_label' => $this->meeting_type?->label(),
             'location_label' => $this->meeting_type === MeetingType::OnlineMeeting ? 'Link Meeting' : 'Lokasi Pertemuan',
             'location_value' => $this->meeting_type === MeetingType::OnlineMeeting
