@@ -60,7 +60,7 @@ it('tells a superadmin in an Admin Prodi seat how to get back', function (): voi
         ->assertInertia(fn ($page) => $page
             ->component('error')
             ->where('reason', fn (string $reason): bool => str_contains($reason, 'workspace Superadmin')
-                && str_contains($reason, 'Ganti Workspace')));
+                && str_contains($reason, 'pemilih workspace di kanan atas')));
 });
 
 it('tells a superadmin in the Superadmin seat that the prodi screens need a prodi', function (): void {

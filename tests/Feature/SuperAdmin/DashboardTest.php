@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Department;
+
 beforeEach(function (): void {
     seedRoles();
 });
@@ -20,4 +22,20 @@ it('shows the superadmin every program studi and flags the ones nobody runs', fu
             ->has('alerts', 1)
             ->where('alerts.0.text', "{$unstaffed->name} belum memiliki Admin Prodi")
             ->where('alerts.0.href', route('superadmin.departments.show', $unstaffed)));
+});
+
+it('counts the unstaffed program studi instead of listing them once there are many', function (): void {
+    Department::factory()->count(4)->sequence(
+        ['name' => 'Akuntansi'],
+        ['name' => 'Biologi'],
+        ['name' => 'Farmasi'],
+        ['name' => 'Hukum'],
+    )->create();
+
+    $this->actingAs(makeSuperAdmin())
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->has('alerts', 1)
+            ->where('alerts.0.text', '4 program studi belum memiliki Admin Prodi')
+            ->where('alerts.0.href', route('superadmin.departments.index')));
 });

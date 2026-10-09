@@ -193,6 +193,7 @@ it('shares the active workspace and the full list with every page', function ():
         ->get(route('dashboard'))
         ->assertInertia(fn ($page) => $page
             ->where('auth.user.workspace.key', "lecturer:{$first->id}")
+            ->where('auth.user.workspace.department_code', $first->code)
             ->where('auth.user.role', 'lecturer')
             ->has('auth.user.workspaces', 3));
 });

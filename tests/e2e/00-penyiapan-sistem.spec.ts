@@ -89,10 +89,43 @@ test.describe.serial('Bagian 0 · Superadmin menyiapkan sistem', () => {
             app.getByText(/hanya tersedia pada workspace Superadmin/i),
         ).toBeVisible();
 
+        // Jalan pulangnya ada di header, tempat workspace aktif selalu tampil.
         await app.goto('/dashboard');
-        await app.getByRole('button', { name: 'Menu akun' }).click();
-        await app.getByRole('button', { name: 'Superadmin' }).click();
+        await app.getByRole('button', { name: /Ganti workspace/ }).click();
+        await app.getByRole('menuitemradio', { name: 'Superadmin' }).click();
 
+        await expect(app.getByText('Seluruh program studi')).toBeVisible();
+    });
+
+    test('superadmin mencari menu dan berpindah workspace lewat palet cepat', async ({
+        app,
+    }) => {
+        const field = app.getByRole('combobox', {
+            name: 'Cari menu atau workspace',
+        });
+
+        // Menu: cukup sebagian namanya.
+        await app.keyboard.press('Control+k');
+        await field.fill('log akt');
+        await app.keyboard.press('Enter');
+        await app.waitForURL(/\/superadmin\/activity-logs/);
+
+        // Workspace: nama prodi membawa ke kursi Admin Prodi-nya...
+        await app.keyboard.press('Control+k');
+        await field.fill(department.name.slice(0, 9).toLowerCase());
+        await app.keyboard.press('Enter');
+        await app.waitForURL(/\/dashboard/);
+        await expect(app.getByText('Admin Program Studi')).toBeVisible();
+
+        // ...dan menu yang ditawarkan kini menu admin prodi, bukan superadmin.
+        await app.keyboard.press('Control+k');
+        await field.fill('log akt');
+        await expect(
+            app.getByText('Tidak ada menu atau workspace yang cocok.'),
+        ).toBeVisible();
+
+        await field.fill('superadmin');
+        await app.keyboard.press('Enter');
         await expect(app.getByText('Seluruh program studi')).toBeVisible();
     });
 
