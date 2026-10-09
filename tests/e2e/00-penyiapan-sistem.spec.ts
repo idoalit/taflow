@@ -129,6 +129,36 @@ test.describe.serial('Bagian 0 · Superadmin menyiapkan sistem', () => {
         await expect(app.getByText('Seluruh program studi')).toBeVisible();
     });
 
+    test('superadmin melihat sebagai Admin Prodi tanpa bisa mengubah apa pun', async ({
+        app,
+    }) => {
+        await app.goto('/superadmin/users');
+        await app.getByRole('row', { name: new RegExp(admin.name) }).click();
+        await app.waitForURL(/\/superadmin\/users\/\d+$/);
+
+        await app
+            .getByRole('button', { name: `Lihat sebagai ${admin.name}` })
+            .click();
+        await app.waitForURL(/\/dashboard/);
+
+        // Layarnya layar si admin, dan pitanya mengatakan itu di setiap halaman.
+        await expect(app.getByText(/Mode lihat saja/)).toBeVisible();
+        await expect(app.getByText('Admin Program Studi')).toBeVisible();
+
+        // Tombolnya tetap tampil seperti bagi pemilik akun, tetapi menyimpan
+        // ditolak dan halamannya tidak berpindah.
+        await app.goto('/admin/thesis-settings');
+        await app.getByRole('button', { name: 'Simpan Pengaturan' }).click();
+        await expect(
+            app.getByText(/Kembali ke akun Anda untuk melakukan perubahan/),
+        ).toBeVisible();
+        await expect(app).toHaveURL(/\/admin\/thesis-settings/);
+
+        await app.getByRole('button', { name: 'Kembali ke Akun Saya' }).click();
+        await app.waitForURL(/\/superadmin\/users\/\d+$/);
+        await expect(app.getByText(/Mode lihat saja/)).toBeHidden();
+    });
+
     test('admin prodi mengaktifkan akun lewat tautan yang dikirim superadmin', async ({
         app,
     }) => {
