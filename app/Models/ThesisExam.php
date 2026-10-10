@@ -177,8 +177,8 @@ abstract class ThesisExam extends Model
     }
 
     /**
-     * The panel is the student's supervisors and examiners — FiPro does not
-     * keep a separate panel roster.
+     * The panel is the student's supervisors and examiners — there is no
+     * separate panel roster.
      *
      * @return Collection<int, PanelMember>
      */

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-# FiPro for production: FrankenPHP serving Laravel through Octane, one image,
+# The application for production: FrankenPHP serving Laravel through Octane, one image,
 # no state inside it. The database, Redis and the object store are servers of
 # their own and are reached over the network.
 
@@ -90,7 +90,7 @@ ENV APP_ENV=production \
     XDG_DATA_HOME=/app/storage/caddy/data
 
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-COPY docker/php.ini "$PHP_INI_DIR/conf.d/zz-fipro.ini"
+COPY docker/php.ini "$PHP_INI_DIR/conf.d/zz-app.ini"
 
 COPY --from=vendor /app /app
 COPY --from=assets /app/public/build /app/public/build
@@ -98,8 +98,8 @@ COPY --from=assets /app/public/build /app/public/build
 # The process runs as an unprivileged user, and only the directories it has to
 # write to are its own; the code itself stays read-only to it.
 RUN cp vendor/laravel/octane/src/Commands/stubs/frankenphp-worker.php public/frankenphp-worker.php \
-    && useradd --system --uid 10001 --user-group --no-create-home fipro \
-    && chown -R fipro:fipro bootstrap/cache storage public/frankenphp-worker.php \
+    && useradd --system --uid 10001 --user-group --no-create-home app \
+    && chown -R app:app bootstrap/cache storage public/frankenphp-worker.php \
     && chmod +x docker/entrypoint.sh
 
 # The upstream binary is allowed to bind ports below 1024. This one listens on
@@ -108,7 +108,7 @@ RUN cp vendor/laravel/octane/src/Commands/stubs/frankenphp-worker.php public/fra
 # stack runs it.
 RUN setcap -r /usr/local/bin/frankenphp
 
-USER fipro
+USER app
 
 EXPOSE 8000
 

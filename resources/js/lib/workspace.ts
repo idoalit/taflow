@@ -7,7 +7,7 @@ export const WORKSPACE_LIST_LIMIT = 6;
 
 const RECENT_LIMIT = 3;
 
-const storageKey = (userId: number) => `fipro:workspace-terakhir:${userId}`;
+const storageKey = (userId: number) => `workspace-terakhir:${userId}`;
 
 /**
  * Storage is a convenience here, never a requirement: a private window or a

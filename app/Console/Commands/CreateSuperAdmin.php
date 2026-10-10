@@ -22,7 +22,7 @@ use Spatie\Permission\Models\Role;
  * own, exactly as every other account does, and it works before any mail
  * server has been configured.
  */
-#[Signature('fipro:superadmin {email : Surel akun superadmin} {--name=Superadmin : Nama yang ditampilkan}')]
+#[Signature('app:superadmin {email : Surel akun superadmin} {--name=Superadmin : Nama yang ditampilkan}')]
 #[Description('Buat akun superadmin dan cetak tautan untuk menyetel kata sandinya')]
 class CreateSuperAdmin extends Command
 {

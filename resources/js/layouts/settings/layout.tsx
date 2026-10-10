@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
@@ -13,19 +13,20 @@ const settingsNavItems = [
 ];
 
 /**
- * The account section, drawn in the Industry system so it reads as part of
- * FiPro rather than a separate app. Sits inside IndustryLayout, which supplies
- * the sidebar and the header title.
+ * The account section, drawn in the Industry system so it reads as part of the
+ * application rather than a separate one. Sits inside IndustryLayout, which
+ * supplies the sidebar and the header title.
  */
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { name } = usePage().props;
 
     return (
         <div className="flex flex-col gap-[var(--ind-space-6)]">
             <div>
                 <h3 className="mb-1">Pengaturan Akun</h3>
                 <p className="ind-muted m-0">
-                    Kelola profil, keamanan, dan tampilan akun FiPro Anda.
+                    Kelola profil, keamanan, dan tampilan akun {name} Anda.
                 </p>
             </div>
 

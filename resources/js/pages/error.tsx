@@ -34,7 +34,7 @@ const MESSAGES: Record<ErrorStatus, { title: string; description: string }> = {
     503: {
         title: 'Sistem sedang dalam pemeliharaan',
         description:
-            'FiPro sedang diperbarui sebentar. Silakan coba kembali beberapa menit lagi.',
+            'Aplikasi sedang diperbarui sebentar. Silakan coba kembali beberapa menit lagi.',
     },
 };
 
@@ -46,7 +46,8 @@ export default function ErrorPage({
     reason?: string | null;
 }) {
     const { title, description } = MESSAGES[status] ?? MESSAGES[500];
-    const isAuthenticated = Boolean(usePage().props.auth?.user);
+    const { auth, name } = usePage().props;
+    const isAuthenticated = Boolean(auth?.user);
 
     return (
         <div className="ind flex min-h-screen w-full items-center justify-center px-[clamp(16px,4vw,32px)] py-[clamp(24px,6vw,64px)]">
@@ -91,7 +92,7 @@ export default function ErrorPage({
                         </BtnLink>
                     ) : (
                         <BtnLink variant="primary" href={login()}>
-                            Masuk ke FiPro
+                            {name ? `Masuk ke ${name}` : 'Masuk'}
                         </BtnLink>
                     )}
 

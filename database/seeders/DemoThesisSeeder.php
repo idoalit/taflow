@@ -71,17 +71,17 @@ class DemoThesisSeeder extends Seeder
         $this->seedRubric($department);
         app(SupervisionIndicatorSeeder::class)->run($department);
 
-        $admin = $this->user('Admin Prodi TI', 'admin@fipro.test', UserRole::Admin);
+        $admin = $this->user('Admin Prodi TI', 'admin@kampus.test', UserRole::Admin);
         $admin->departments()->syncWithoutDetaching([$department->id]);
 
-        $this->user('Superadmin FiPro', 'superadmin@fipro.test', UserRole::SuperAdmin);
+        $this->user('Superadmin '.config('app.name'), 'superadmin@kampus.test', UserRole::SuperAdmin);
 
-        $supervisorOne = $this->lecturer('Dr. Budi Santoso', 'budi@fipro.test', '0012345678', $department);
-        $supervisorTwo = $this->lecturer('Sari Wulandari, M.Kom', 'sari@fipro.test', '0012345679', $department);
+        $supervisorOne = $this->lecturer('Dr. Budi Santoso', 'budi@kampus.test', '0012345678', $department);
+        $supervisorTwo = $this->lecturer('Sari Wulandari, M.Kom', 'sari@kampus.test', '0012345679', $department);
 
         $this->seedSecondDepartment($supervisorOne);
 
-        $student = $this->student('Rani Amelia', 'rani@fipro.test', '21051234', $department);
+        $student = $this->student('Rani Amelia', 'rani@kampus.test', '21051234', $department);
 
         foreach ([[$supervisorOne, 1], [$supervisorTwo, 2]] as [$lecturer, $order]) {
             $student->supervisorAssignments()->firstOrCreate(
@@ -214,7 +214,7 @@ class DemoThesisSeeder extends Seeder
         $supervisorOne->user->assignRole(UserRole::Admin->value);
         $supervisorOne->user->departments()->syncWithoutDetaching([$department->id]);
 
-        $student = $this->student('Putri Maharani', 'putri@fipro.test', '21062301', $department);
+        $student = $this->student('Putri Maharani', 'putri@kampus.test', '21062301', $department);
 
         $student->supervisorAssignments()->firstOrCreate(
             ['lecturer_id' => $supervisorOne->id, 'role' => SupervisorRole::Supervisor],
@@ -454,7 +454,7 @@ class DemoThesisSeeder extends Seeder
         Lecturer $supervisorOne,
         Lecturer $supervisorTwo,
     ): void {
-        $student = $this->student('Dimas Prasetyo', 'dimas@fipro.test', '21051235', $department);
+        $student = $this->student('Dimas Prasetyo', 'dimas@kampus.test', '21051235', $department);
 
         foreach ([[$supervisorOne, 1], [$supervisorTwo, 2]] as [$lecturer, $order]) {
             $student->supervisorAssignments()->firstOrCreate(
@@ -713,13 +713,13 @@ class DemoThesisSeeder extends Seeder
         app(BuildExamPanel::class)->handle($exam, [
             [
                 'lecturer_id' => $this->lecturer(
-                    'Prof. Dr. Hendra Wijaya', 'hendra@fipro.test', '0012345680', $department,
+                    'Prof. Dr. Hendra Wijaya', 'hendra@kampus.test', '0012345680', $department,
                 )->id,
                 'role' => ExamParticipantRole::ChairExaminer->value,
             ],
             [
                 'lecturer_id' => $this->lecturer(
-                    'Aulia Rahman, M.T.', 'aulia@fipro.test', '0012345681', $department,
+                    'Aulia Rahman, M.T.', 'aulia@kampus.test', '0012345681', $department,
                 )->id,
                 'role' => ExamParticipantRole::MemberExaminer->value,
             ],
@@ -796,7 +796,7 @@ class DemoThesisSeeder extends Seeder
         Lecturer $supervisorOne,
         Lecturer $supervisorTwo,
     ): void {
-        $student = $this->student('Bagas Nugroho', 'bagas@fipro.test', '21051236', $department);
+        $student = $this->student('Bagas Nugroho', 'bagas@kampus.test', '21051236', $department);
 
         foreach ([[$supervisorOne, 1], [$supervisorTwo, 2]] as [$lecturer, $order]) {
             $student->supervisorAssignments()->firstOrCreate(
@@ -917,8 +917,8 @@ class DemoThesisSeeder extends Seeder
             return;
         }
 
-        $chair = $this->lecturer('Prof. Dr. Hendra Wijaya', 'hendra@fipro.test', '0012345680', $department);
-        $member = $this->lecturer('Aulia Rahman, M.T.', 'aulia@fipro.test', '0012345681', $department);
+        $chair = $this->lecturer('Prof. Dr. Hendra Wijaya', 'hendra@kampus.test', '0012345680', $department);
+        $member = $this->lecturer('Aulia Rahman, M.T.', 'aulia@kampus.test', '0012345681', $department);
 
         app(BuildExamPanel::class)->handle($exam, [
             ['lecturer_id' => $chair->id, 'role' => ExamParticipantRole::ChairExaminer->value],
@@ -966,7 +966,7 @@ class DemoThesisSeeder extends Seeder
                 'path' => DemoFile::signature($participant->user),
                 'signed_at' => $sat->copy()->addMinutes(95),
                 'ip_address' => '127.0.0.1',
-                'user_agent' => 'FiPro Demo Seeder',
+                'user_agent' => config('app.name').' Demo Seeder',
             ]);
 
             $participant->update([

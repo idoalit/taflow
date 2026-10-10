@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { Form, usePage } from '@inertiajs/react';
 import { ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';
@@ -14,6 +14,7 @@ export type Props = {
 };
 
 export default function ManageTwoFactor(props: Props) {
+    const { name } = usePage().props;
     const requiresConfirmation = props.requiresConfirmation ?? false;
     const twoFactorEnabled = props.twoFactorEnabled ?? false;
 
@@ -48,7 +49,7 @@ export default function ManageTwoFactor(props: Props) {
             <div>
                 <h6 className="m-0">Autentikasi Dua Faktor</h6>
                 <p className="ind-muted m-0 text-[13px]">
-                    Kelola lapisan keamanan tambahan untuk akun FiPro Anda.
+                    Kelola lapisan keamanan tambahan untuk akun {name} Anda.
                 </p>
             </div>
             {twoFactorEnabled ? (

@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { KeyRound, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Btn } from '@/components/industry/ui';
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export default function PasskeyItem({ passkey, onDelete }: Props) {
+    const { name } = usePage().props;
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = () => {
@@ -75,7 +77,7 @@ export default function PasskeyItem({ passkey, onDelete }: Props) {
                     <DialogTitle>Hapus passkey</DialogTitle>
                     <DialogDescription>
                         Yakin ingin menghapus passkey "{passkey.name}"? Passkey
-                        ini tidak lagi dapat digunakan untuk masuk ke FiPro.
+                        ini tidak lagi dapat digunakan untuk masuk ke {name}.
                     </DialogDescription>
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>

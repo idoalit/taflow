@@ -7,7 +7,17 @@ import IndustryLayout from '@/layouts/industry-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+// The name the server is configured with, so renaming the application never
+// needs a rebuild. There is no document while a page is rendered on the server,
+// where the name the build was given stands in.
+const appName =
+    (typeof document === 'undefined'
+        ? null
+        : document.querySelector<HTMLMetaElement>(
+              'meta[name="application-name"]',
+          )?.content) ||
+    import.meta.env.VITE_APP_NAME ||
+    'Laravel';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

@@ -50,7 +50,7 @@ export function IndustrySidebar({ onNavigate }: { onNavigate?: () => void }) {
                         letterSpacing: '-0.01em',
                     }}
                 >
-                    FiPro
+                    {page.props.name}
                 </div>
                 <div
                     className="mt-[2px] text-[11px] tracking-[0.08em] uppercase"

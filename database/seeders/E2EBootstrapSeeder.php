@@ -18,7 +18,7 @@ use Illuminate\Database\Seeder;
  */
 class E2EBootstrapSeeder extends Seeder
 {
-    public const SUPERADMIN_EMAIL = 'superadmin.e2e@fipro.test';
+    public const SUPERADMIN_EMAIL = 'superadmin.e2e@kampus.test';
 
     public const SUPERADMIN_PASSWORD = 'password';
 

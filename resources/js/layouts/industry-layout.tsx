@@ -14,7 +14,7 @@ import { IndustrySidebar } from '@/layouts/industry/sidebar';
 const MOBILE_BREAKPOINT = 900;
 
 /**
- * The shell every FiPro screen sits in: a persistent sidebar on desktop, a
+ * The shell every signed-in screen sits in: a persistent sidebar on desktop, a
  * drawer on narrow screens, and a header carrying the page title, the search
  * that opens the palette, and the workspace the person is working in.
  */

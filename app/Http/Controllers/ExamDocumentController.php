@@ -58,7 +58,7 @@ class ExamDocumentController extends Controller
             .implode(' ', $this->missingFor($thesisExam, ExamDocument::Minutes)),
         );
 
-        $archive = tempnam(sys_get_temp_dir(), 'fipro-docs');
+        $archive = tempnam(sys_get_temp_dir(), 'exam-docs');
         $zip = new ZipArchive;
         $zip->open($archive, ZipArchive::OVERWRITE | ZipArchive::CREATE);
 

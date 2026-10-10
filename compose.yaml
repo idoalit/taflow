@@ -1,22 +1,21 @@
-# FiPro in production.
+# The application in production.
 #
 #   cp .env.production.example .env.production      # then fill it in
 #   docker compose --env-file .env.production build
 #   docker compose --env-file .env.production up -d
 #   docker compose --env-file .env.production run --rm --no-deps app \
-#       php artisan fipro:superadmin admin@kampus.ac.id
+#       php artisan app:superadmin admin@kampus.ac.id
 #
-# `--env-file` is what lets the two values this file reads itself (the address
-# and port to listen on) come from the same file the application reads.
+# `--env-file` is what lets the values this file reads itself (the stack's name,
+# and the address and port to listen on) come from the same file the
+# application reads.
 #
 # The stack is the application and nothing else. MySQL, Redis and the object
 # store are servers of their own, named in .env.production. There is no queue
 # worker and no scheduler because the application queues and schedules nothing.
 
-name: fipro
-
-x-fipro: &fipro
-    image: ${FIPRO_IMAGE:-fipro:latest}
+x-service: &service
+    image: ${APP_IMAGE:-${COMPOSE_PROJECT_NAME}:latest}
     build:
         context: .
         target: runtime
@@ -38,12 +37,12 @@ services:
     # the roles and permissions. If it fails, the application is not started on
     # a schema it does not match.
     migrate:
-        <<: *fipro
+        <<: *service
         command: ['release']
         restart: 'no'
 
     app:
-        <<: *fipro
+        <<: *service
         command: ['serve']
         depends_on:
             migrate:

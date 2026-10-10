@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 /**
- * Every in-app notification FiPro raises shares one shape — a category, a
+ * Every in-app notification the application raises shares one shape — a category, a
  * headline, a sentence of detail, and optionally somewhere to go. The bell and
  * the Notifikasi page render straight from it.
  */

@@ -1,4 +1,4 @@
-/** Shapes shared by the FiPro thesis-supervision screens. */
+/** Shapes shared by the thesis-supervision screens. */
 
 /** Per-program-studi rules the interface branches on. */
 export type ThesisSettings = {
