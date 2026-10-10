@@ -1,13 +1,70 @@
 <?php
 
 use App\Models\User;
+use App\Support\SystemSettings;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia;
 use Laravel\Fortify\Features;
 
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
 
     $response->assertOk();
+});
+
+test('the front page is the login screen', function () {
+    config(['institution.name' => 'Universitas Contoh', 'institution.unit' => 'Fakultas Teknik']);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('auth/login')
+            ->where('institution', [
+                'name' => 'Universitas Contoh',
+                'unit' => 'Fakultas Teknik',
+                'logo' => null,
+            ]));
+});
+
+test('the front page sends a signed-in user to the dashboard', function () {
+    $this->actingAs(User::factory()->create())
+        ->get(route('home'))
+        ->assertRedirect(route('dashboard'));
+});
+
+test('the login screen shows the logo the institution uploaded', function () {
+    Storage::disk('documents')->put('institution/logo.png', 'png-bytes');
+    app(SystemSettings::class)->put(SystemSettings::INSTITUTION, [
+        'name' => 'Universitas Contoh',
+        'logo_path' => 'institution/logo.png',
+    ]);
+
+    $this->get(route('login'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('institution.name', 'Universitas Contoh')
+            ->where('institution.logo', 'data:image/png;base64,'.base64_encode('png-bytes')));
+});
+
+test('the login screen still opens when the logo cannot be read', function () {
+    Exceptions::fake();
+
+    app(SystemSettings::class)->put(SystemSettings::INSTITUTION, [
+        'name' => 'Universitas Contoh',
+        'logo_path' => 'institution/logo.png',
+    ]);
+
+    // The object store the documents disk points at is not answering.
+    Storage::shouldReceive('disk')->with('documents')->andThrow(new RuntimeException('Connection refused'));
+
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('institution.name', 'Universitas Contoh')
+            ->where('institution.logo', null));
+
+    Exceptions::assertReported(RuntimeException::class);
 });
 
 test('users can authenticate using the login screen', function () {

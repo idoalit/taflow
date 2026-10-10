@@ -31,9 +31,9 @@ test.describe.serial('Bagian 2 · Akun baru mengaktifkan diri', () => {
         await signOutOf(app);
 
         await app.goto('/login');
-        await app.getByLabel('Email address').fill(student.email);
-        await app.getByLabel('Password', { exact: true }).fill(PASSWORD);
-        await app.getByRole('button', { name: /log in/i }).click();
+        await app.getByLabel('Surel').fill(student.email);
+        await app.getByLabel('Kata Sandi', { exact: true }).fill(PASSWORD);
+        await app.getByRole('button', { name: 'Masuk', exact: true }).click();
 
         await expect(app).toHaveURL(/login/);
         await expect(

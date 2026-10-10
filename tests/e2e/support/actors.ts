@@ -80,10 +80,11 @@ export async function signIn(
     email: string,
     password: string = PASSWORD,
 ): Promise<void> {
-    await page.goto('/login');
-    await page.getByLabel('Email address').fill(email);
-    await page.getByLabel('Password', { exact: true }).fill(password);
-    await page.getByRole('button', { name: /log in|masuk/i }).click();
+    // The front door is the sign-in screen.
+    await page.goto('/');
+    await page.getByLabel('Surel').fill(email);
+    await page.getByLabel('Kata Sandi', { exact: true }).fill(password);
+    await page.getByRole('button', { name: 'Masuk', exact: true }).click();
     await page.waitForURL(/\/dashboard/);
 }
 
