@@ -71,12 +71,12 @@ describe('creating', function (): void {
 
         $response = $this->actingAs($superadmin)->post(route('superadmin.users.store'), [
             'name' => 'Admin Baru',
-            'email' => 'Admin.Baru@fipro.test',
+            'email' => 'Admin.Baru@kampus.test',
             'role' => UserRole::Admin->value,
             'department_ids' => [$department->id],
         ]);
 
-        $user = User::where('email', 'admin.baru@fipro.test')->sole();
+        $user = User::where('email', 'admin.baru@kampus.test')->sole();
 
         $response->assertRedirect(route('superadmin.users.show', $user));
         Notification::assertSentTo($user, ResetPassword::class);
@@ -92,11 +92,11 @@ describe('creating', function (): void {
 
         $this->actingAs(makeSuperAdmin())->post(route('superadmin.users.store'), [
             'name' => 'Superadmin Kedua',
-            'email' => 'kedua@fipro.test',
+            'email' => 'kedua@kampus.test',
             'role' => UserRole::SuperAdmin->value,
         ])->assertRedirect();
 
-        $user = User::where('email', 'kedua@fipro.test')->sole();
+        $user = User::where('email', 'kedua@kampus.test')->sole();
 
         expect($user->hasRole(UserRole::SuperAdmin->value))->toBeTrue()
             ->and($user->departments()->count())->toBe(0);
@@ -106,7 +106,7 @@ describe('creating', function (): void {
         $this->actingAs(makeSuperAdmin())
             ->post(route('superadmin.users.store'), [
                 'name' => 'Admin Tanpa Prodi',
-                'email' => 'tanpa@fipro.test',
+                'email' => 'tanpa@kampus.test',
                 'role' => UserRole::Admin->value,
                 'department_ids' => [],
             ])
@@ -114,7 +114,7 @@ describe('creating', function (): void {
                 'department_ids' => 'Pilih sedikitnya satu program studi untuk Admin Prodi.',
             ]);
 
-        expect(User::where('email', 'tanpa@fipro.test')->exists())->toBeFalse();
+        expect(User::where('email', 'tanpa@kampus.test')->exists())->toBeFalse();
     });
 
     it('rejects a surel that is already registered', function (): void {
@@ -133,7 +133,7 @@ describe('creating', function (): void {
         $this->actingAs(makeSuperAdmin())
             ->post(route('superadmin.users.store'), [
                 'name' => 'Lewat Belakang',
-                'email' => 'belakang@fipro.test',
+                'email' => 'belakang@kampus.test',
                 'role' => $role,
             ])
             ->assertSessionHasErrors('role');
@@ -148,11 +148,11 @@ describe('updating', function (): void {
         $user = makeAdmin(makeDepartment());
 
         $this->actingAs(makeSuperAdmin())
-            ->put(route('superadmin.users.update', $user), ['name' => 'Nama Baru', 'email' => 'baru@fipro.test'])
+            ->put(route('superadmin.users.update', $user), ['name' => 'Nama Baru', 'email' => 'baru@kampus.test'])
             ->assertRedirect();
 
         expect($user->refresh()->name)->toBe('Nama Baru')
-            ->and($user->email)->toBe('baru@fipro.test');
+            ->and($user->email)->toBe('baru@kampus.test');
     });
 
     it('mails a fresh activation link on request', function (): void {
@@ -257,7 +257,7 @@ describe('deleting', function (): void {
         $user = makeAdmin(makeDepartment());
 
         $this->actingAs(makeSuperAdmin())
-            ->delete(route('superadmin.users.destroy', $user), ['email' => 'salah@fipro.test'])
+            ->delete(route('superadmin.users.destroy', $user), ['email' => 'salah@kampus.test'])
             ->assertSessionHasErrors(['email' => 'Surel yang diketik tidak sama dengan surel akun ini.']);
 
         $this->assertModelExists($user);

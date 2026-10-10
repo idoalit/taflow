@@ -28,6 +28,15 @@ test('the front page is the login screen', function () {
             ]));
 });
 
+test('the application is called what it is configured to be called', function () {
+    config(['app.name' => 'Nama Lain']);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('<meta name="application-name" content="Nama Lain">', false)
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('name', 'Nama Lain'));
+});
+
 test('the front page sends a signed-in user to the dashboard', function () {
     $this->actingAs(User::factory()->create())
         ->get(route('home'))

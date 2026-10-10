@@ -80,10 +80,10 @@ it('forbids a write to somebody who is not a superadmin', function (): void {
     $this->actingAs($admin)
         ->post(route('superadmin.users.store'), [
             'name' => 'Penyusup',
-            'email' => 'penyusup@fipro.test',
+            'email' => 'penyusup@kampus.test',
             'role' => UserRole::SuperAdmin->value,
         ])
         ->assertForbidden();
 
-    expect(User::where('email', 'penyusup@fipro.test')->exists())->toBeFalse();
+    expect(User::where('email', 'penyusup@kampus.test')->exists())->toBeFalse();
 });

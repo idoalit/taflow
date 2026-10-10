@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Password;
 it('creates the first superadmin and prints a link that sets its password', function (): void {
     seedRoles();
 
-    $exit = Artisan::call('fipro:superadmin', ['email' => 'Kepala.TI@Kampus.ac.id', '--name' => 'Kepala TI']);
+    $exit = Artisan::call('app:superadmin', ['email' => 'Kepala.TI@Kampus.ac.id', '--name' => 'Kepala TI']);
     $output = Artisan::output();
 
     $user = User::where('email', 'kepala.ti@kampus.ac.id')->sole();
@@ -26,7 +26,7 @@ it('gives an existing superadmin a fresh link instead of a second account', func
     seedRoles();
     $superadmin = makeSuperAdmin();
 
-    $this->artisan('fipro:superadmin', ['email' => $superadmin->email])
+    $this->artisan('app:superadmin', ['email' => $superadmin->email])
         ->expectsOutputToContain('sudah ada; tautan baru dibuat')
         ->assertSuccessful();
 
@@ -37,7 +37,7 @@ it('does not promote an account that is not a superadmin', function (): void {
     seedRoles();
     $student = makeStudent();
 
-    $this->artisan('fipro:superadmin', ['email' => $student->user->email])
+    $this->artisan('app:superadmin', ['email' => $student->user->email])
         ->expectsOutputToContain('sudah dipakai akun lain yang bukan superadmin')
         ->assertFailed();
 
@@ -47,7 +47,7 @@ it('does not promote an account that is not a superadmin', function (): void {
 it('rejects something that is not a surel', function (): void {
     seedRoles();
 
-    $this->artisan('fipro:superadmin', ['email' => 'bukan-surel'])
+    $this->artisan('app:superadmin', ['email' => 'bukan-surel'])
         ->expectsOutputToContain('bukan alamat surel yang sah')
         ->assertFailed();
 
@@ -55,7 +55,7 @@ it('rejects something that is not a surel', function (): void {
 });
 
 it('says what to run when the roles have not been seeded yet', function (): void {
-    $this->artisan('fipro:superadmin', ['email' => 'admin@kampus.ac.id'])
+    $this->artisan('app:superadmin', ['email' => 'admin@kampus.ac.id'])
         ->expectsOutputToContain('db:seed --class=RolePermissionSeeder')
         ->assertFailed();
 

@@ -13,7 +13,7 @@ export const PASSWORD = 'RahasiaE2E!2026';
 /** The only account the database starts with; see E2EBootstrapSeeder. */
 export const superadmin = {
     name: 'Superadmin E2E',
-    email: 'superadmin.e2e@fipro.test',
+    email: 'superadmin.e2e@kampus.test',
     password: 'password',
 };
 
@@ -26,7 +26,7 @@ export const department = {
 /** Created by the superadmin in Bagian 0, and activated like everyone else. */
 export const admin = {
     name: 'Admin Prodi E2E',
-    email: 'admin.e2e@fipro.test',
+    email: 'admin.e2e@kampus.test',
     password: PASSWORD,
 };
 

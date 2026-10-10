@@ -192,7 +192,7 @@ describe('looking only', function (): void {
 
         expect($student->user->refresh()->only(['name', 'email', 'password']))->toBe($before);
     })->with([
-        'changing the name and surel' => ['patch', 'profile.update', ['name' => 'Diganti', 'email' => 'diganti@fipro.test']],
+        'changing the name and surel' => ['patch', 'profile.update', ['name' => 'Diganti', 'email' => 'diganti@kampus.test']],
         'changing the password' => ['put', 'user-password.update', [
             'current_password' => 'password',
             'password' => 'KataSandiBaru!2026',

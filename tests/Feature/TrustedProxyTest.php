@@ -25,9 +25,9 @@ it('builds https links when the gateway says the visitor came over https', funct
     trustGateway('10.0.0.5, 10.0.1.0/24');
 
     $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.20'])
-        ->withHeaders(['X-Forwarded-Proto' => 'https', 'X-Forwarded-Host' => 'fipro.kampus.ac.id'])
+        ->withHeaders(['X-Forwarded-Proto' => 'https', 'X-Forwarded-Host' => 'ta.kampus.ac.id'])
         ->get('/dashboard')
-        ->assertRedirect('https://fipro.kampus.ac.id/login');
+        ->assertRedirect('https://ta.kampus.ac.id/login');
 });
 
 it('does not believe forwarded headers from an address it was not told to trust', function (): void {

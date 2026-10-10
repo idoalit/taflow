@@ -131,7 +131,7 @@ it('leaves the proposal-stage student without a research logbook', function (): 
 });
 
 it('books the far-along demo student for an ujian hasil', function (): void {
-    $student = Student::whereRelation('user', 'email', 'dimas@fipro.test')->sole();
+    $student = Student::whereRelation('user', 'email', 'dimas@kampus.test')->sole();
 
     $exam = ResearchExam::where('student_id', $student->id)->sole();
     $request = ResearchExamRequest::where('student_id', $student->id)->sole();
@@ -144,7 +144,7 @@ it('books the far-along demo student for an ujian hasil', function (): void {
 });
 
 it('seeds one ujian hasil that is entirely finished and released', function (): void {
-    $student = Student::whereRelation('user', 'email', 'bagas@fipro.test')->sole();
+    $student = Student::whereRelation('user', 'email', 'bagas@kampus.test')->sole();
     $exam = ResearchExam::where('student_id', $student->id)->sole();
 
     expect($exam->status)->toBe(ExamStatus::Released)
@@ -170,7 +170,7 @@ it('seeds one ujian hasil that is entirely finished and released', function (): 
 });
 
 it('leaves nothing missing behind the released result', function (): void {
-    $student = Student::whereRelation('user', 'email', 'bagas@fipro.test')->sole();
+    $student = Student::whereRelation('user', 'email', 'bagas@kampus.test')->sole();
     $exam = ResearchExam::where('student_id', $student->id)->sole();
 
     $compose = app(ComposeFinalGrade::class);
@@ -187,7 +187,7 @@ it('leaves nothing missing behind the released result', function (): void {
 });
 
 it('marks ujian hasil with the block-additive faculty rubric', function (): void {
-    $student = Student::whereRelation('user', 'email', 'bagas@fipro.test')->sole();
+    $student = Student::whereRelation('user', 'email', 'bagas@kampus.test')->sole();
     $exam = ResearchExam::where('student_id', $student->id)->sole();
     $rubric = $exam->effectiveRubric();
 
