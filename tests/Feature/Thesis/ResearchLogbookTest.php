@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
     seedRoles();
-    Storage::fake('local');
+    Storage::fake('documents');
 });
 
 /**
@@ -43,7 +43,7 @@ it('stores a logbook entry with an attachment', function (): void {
         ->and($entry->progress)->toBe(65)
         ->and($entry->attachment_name)->toBe('training_log.xlsx');
 
-    Storage::disk('local')->assertExists($entry->attachment_path);
+    Storage::disk('documents')->assertExists($entry->attachment_path);
 });
 
 it('rejects a logbook entry dated in the future', function (): void {

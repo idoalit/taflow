@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
     seedRoles();
-    Storage::fake('public');
+    Storage::fake('documents');
 });
 
 /**
@@ -34,7 +34,8 @@ describe('institution identity', function (): void {
         config(['institution.name' => 'Institut Bawaan', 'institution.city' => 'Semarang']);
 
         expect(app(SystemSettings::class)->institution())
-            ->toMatchArray(['name' => 'Institut Bawaan', 'city' => 'Semarang', 'logo_file' => null]);
+            ->toMatchArray(['name' => 'Institut Bawaan', 'city' => 'Semarang'])
+            ->and(app(SystemSettings::class)->logo())->toBeNull();
     });
 
     it('puts the saved identity on every letterhead', function (): void {
@@ -82,10 +83,11 @@ describe('institution identity', function (): void {
 
         $second = app(SystemSettings::class)->get(SystemSettings::INSTITUTION)['logo_path'];
 
-        Storage::disk('public')->assertMissing($first);
-        Storage::disk('public')->assertExists($second);
-        expect(app(SystemSettings::class)->institution()['logo_file'])
-            ->toBe(Storage::disk('public')->path($second));
+        Storage::disk('documents')->assertMissing($first);
+        Storage::disk('documents')->assertExists($second);
+        // Handed out as the image itself, never as a path: the disk may be an
+        // object store, which has no path to give.
+        expect(app(SystemSettings::class)->logo())->toStartWith('data:image/jpeg;base64,');
     });
 
     it('keeps the logo when the identity is saved without a new one', function (): void {
@@ -102,7 +104,7 @@ describe('institution identity', function (): void {
             'name' => 'Universitas Contoh Baru',
         ]);
 
-        Storage::disk('public')->assertExists($path);
+        Storage::disk('documents')->assertExists($path);
         expect(app(SystemSettings::class)->get(SystemSettings::INSTITUTION)['logo_path'])->toBe($path);
     });
 
@@ -117,7 +119,7 @@ describe('institution identity', function (): void {
             ])
             ->assertSessionHasErrors('logo');
 
-        expect(Storage::disk('public')->allFiles())->toBe([]);
+        expect(Storage::disk('documents')->allFiles())->toBe([]);
     });
 
     it('removes the uploaded logo on request', function (): void {
@@ -134,9 +136,10 @@ describe('institution identity', function (): void {
             ->delete(route('superadmin.settings.institution.logo.destroy'))
             ->assertSessionHas('success', 'Logo dihapus.');
 
-        Storage::disk('public')->assertMissing($path);
+        Storage::disk('documents')->assertMissing($path);
         expect(app(SystemSettings::class)->institution())
-            ->toMatchArray(['name' => 'Universitas Contoh', 'logo_file' => null]);
+            ->toMatchArray(['name' => 'Universitas Contoh'])
+            ->and(app(SystemSettings::class)->logo())->toBeNull();
     });
 });
 

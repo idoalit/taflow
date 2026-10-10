@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
     seedRoles();
-    Storage::fake('local');
+    Storage::fake('documents');
 });
 
 it('reports a student as ineligible until the proposal guidance quota is met', function (): void {
@@ -72,7 +72,7 @@ it('stores a proposal exam request with its supporting documents', function (): 
         ->and($request->documents)->toHaveCount(1)
         ->and($request->documents[0]['name'])->toBe('Bukti Lunas SPP');
 
-    Storage::disk('local')->assertExists($request->documents[0]['path']);
+    Storage::disk('documents')->assertExists($request->documents[0]['path']);
 });
 
 it('allows only one outstanding proposal exam request', function (): void {

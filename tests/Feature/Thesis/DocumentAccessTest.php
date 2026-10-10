@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
     seedRoles();
-    Storage::fake('local');
+    Storage::fake('documents');
 });
 
 /**
@@ -18,7 +18,7 @@ function uploadedProposalPath(Student $student): string
 {
     return UploadedFile::fake()
         ->create('proposal.pdf', 50, 'application/pdf')
-        ->store("thesis/{$student->id}/proposals", 'local');
+        ->store("thesis/{$student->id}/proposals", 'documents');
 }
 
 it('serves a document to the student who owns it', function (): void {
@@ -71,7 +71,7 @@ it('refuses a path that tries to escape the thesis directory', function (): void
 
 it('refuses a path outside the thesis namespace', function (): void {
     $student = makeStudent();
-    Storage::disk('local')->put('secrets/keys.txt', 'nope');
+    Storage::disk('documents')->put('secrets/keys.txt', 'nope');
 
     $this->actingAs($student->user)
         ->get(route('documents.show', ['path' => 'secrets/keys.txt']))
@@ -104,7 +104,7 @@ it('downloads a type it cannot render even when previewing', function (): void {
     $student = makeStudent();
     $path = UploadedFile::fake()
         ->create('draft.docx', 20)
-        ->store("thesis/{$student->id}/proposals", 'local');
+        ->store("thesis/{$student->id}/proposals", 'documents');
 
     $response = $this->actingAs($student->user)
         ->get(route('documents.show', ['path' => $path, 'name' => 'draft.docx', 'preview' => 1]));

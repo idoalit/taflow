@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
     seedRoles();
-    Storage::fake('local');
+    Storage::fake('documents');
 });
 
 /** A 1x1 transparent PNG, as a canvas would hand it over. */
@@ -59,7 +59,7 @@ it('stores a drawn signature and marks the seat as signed', function (): void {
     expect($signature->type)->toBe(SignatureType::Drawn)
         ->and($signature->user_id)->toBe($chair->user_id)
         ->and($signature->ip_address)->not->toBeNull()
-        ->and(Storage::disk('local')->exists($signature->path))->toBeTrue()
+        ->and(Storage::disk('documents')->exists($signature->path))->toBeTrue()
         ->and($seat->signed_at)->not->toBeNull()
         ->and($seat->signature_id)->toBe($signature->id)
         // Signing is itself a statement of having been there.

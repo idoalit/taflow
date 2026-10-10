@@ -21,6 +21,7 @@ use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SupervisionIndicatorSeeder;
 use Database\Seeders\ThesisExamRubricSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /*
@@ -36,6 +37,11 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    // Every upload, signature and demo file goes to this disk. Faked for the
+    // whole suite, so a test that forgets to do it cannot leave files in the
+    // developer's own storage — or, with the disk pointed at an object store,
+    // write to a real bucket.
+    ->beforeEach(fn () => Storage::fake('documents'))
     ->in('Feature');
 
 /*

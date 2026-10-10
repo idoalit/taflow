@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
     seedRoles();
-    Storage::fake('local');
+    Storage::fake('documents');
 });
 
 /** A sitting carried all the way through to a released result. */

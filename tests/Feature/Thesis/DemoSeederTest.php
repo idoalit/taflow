@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Storage;
  * files behind every attachment.
  */
 beforeEach(function (): void {
-    Storage::fake('local');
+    Storage::fake('documents');
     app(RolePermissionSeeder::class)->run();
     app(DemoThesisSeeder::class)->run();
 });
@@ -51,8 +51,8 @@ it('backs every seeded attachment with a file that really exists', function (): 
     expect($paths)->not->toBeEmpty();
 
     foreach ($paths as $path) {
-        Storage::disk('local')->assertExists($path);
-        expect(Storage::disk('local')->get($path))->not->toBeEmpty();
+        Storage::disk('documents')->assertExists($path);
+        expect(Storage::disk('documents')->get($path))->not->toBeEmpty();
     }
 });
 
@@ -60,7 +60,7 @@ it('writes sample documents as valid PDFs', function (): void {
     $path = ThesisProposal::query()
         ->where('title', 'like', 'Analisis Sentimen%')
         ->value('document_path');
-    $contents = Storage::disk('local')->get($path);
+    $contents = Storage::disk('documents')->get($path);
 
     expect($contents)->toStartWith('%PDF-1.4')
         ->and(rtrim($contents))->toEndWith('%%EOF')
@@ -165,7 +165,7 @@ it('seeds one ujian hasil that is entirely finished and released', function (): 
         ->and($participants->whereNotNull('signature_id'))->toHaveCount(5);
 
     foreach ($participants as $participant) {
-        Storage::disk('local')->assertExists($participant->signature->path);
+        Storage::disk('documents')->assertExists($participant->signature->path);
     }
 });
 

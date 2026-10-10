@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function (): void {
     seedRoles();
-    Storage::fake('local');
+    Storage::fake('documents');
 });
 
 it('lets a student submit a proposal, with the alignment round still closed', function (): void {
@@ -33,7 +33,7 @@ it('lets a student submit a proposal, with the alignment round still closed', fu
     // Persamaan Persepsi only opens once a supervisor approves the proposal.
     expect($proposal->perceptionAlignments()->count())->toBe(0);
 
-    Storage::disk('local')->assertExists($proposal->document_path);
+    Storage::disk('documents')->assertExists($proposal->document_path);
 });
 
 it('rejects a proposal submission that is missing its document', function (): void {
