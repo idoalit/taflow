@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\ResetUserPassword;
+use App\Support\SystemSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -49,6 +50,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'status' => $request->session()->get('status'),
+            'institution' => $this->institution(app(SystemSettings::class)),
         ]));
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/reset-password', [
@@ -64,6 +66,27 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
+    }
+
+    /**
+     * Whose application this is, for the sign-in screen to say so.
+     *
+     * The logo is read from the documents disk, which in production is an
+     * object store on another server. Nobody should be locked out because
+     * that server is not answering, so a failure there is reported and the
+     * screen falls back to the application's own mark.
+     *
+     * @return array{name: string, unit: string|null, logo: string|null}
+     */
+    private function institution(SystemSettings $settings): array
+    {
+        $institution = $settings->institution();
+
+        return [
+            'name' => $institution['name'],
+            'unit' => $institution['unit'],
+            'logo' => rescue(fn (): ?string => $settings->logo()),
+        ];
     }
 
     /**

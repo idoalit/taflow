@@ -13,7 +13,9 @@ void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            case name === 'welcome':
+            // The sign-in screen stands alone: it is the front door, and lays
+            // out the whole viewport itself.
+            case name === 'auth/login':
             // The error page stands alone: it has to render for a signed-out
             // visitor too, where the app shell has no user to draw.
             case name === 'error':
