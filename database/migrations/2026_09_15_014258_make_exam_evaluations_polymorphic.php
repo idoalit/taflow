@@ -25,9 +25,12 @@ return new class extends Migration
             'exam_id' => DB::raw('proposal_exam_id'),
         ]);
 
+        // The foreign key goes first: MySQL uses the unique index below as the
+        // key's own index, and will not let it be dropped while the key stands.
         Schema::table('exam_evaluations', function (Blueprint $table): void {
+            $table->dropForeign(['proposal_exam_id']);
             $table->dropUnique(['proposal_exam_id', 'lecturer_id']);
-            $table->dropConstrainedForeignId('proposal_exam_id');
+            $table->dropColumn('proposal_exam_id');
         });
 
         Schema::table('exam_evaluations', function (Blueprint $table): void {
