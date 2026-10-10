@@ -37,6 +37,11 @@ class StudentPolicy
         return $user->can('data.import');
     }
 
+    public function create(User $user): bool
+    {
+        return $user->can('student.manage');
+    }
+
     public function manage(User $user, Student $student): bool
     {
         return $user->can('student.manage') && $student->isVisibleTo($user);

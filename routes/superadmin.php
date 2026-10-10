@@ -5,6 +5,7 @@ use App\Http\Controllers\SuperAdmin\BroadcastController;
 use App\Http\Controllers\SuperAdmin\DepartmentAdminController;
 use App\Http\Controllers\SuperAdmin\DepartmentController;
 use App\Http\Controllers\SuperAdmin\ImpersonationController;
+use App\Http\Controllers\SuperAdmin\LecturerDepartmentController;
 use App\Http\Controllers\SuperAdmin\RoleController;
 use App\Http\Controllers\SuperAdmin\SystemSettingController;
 use App\Http\Controllers\SuperAdmin\UserController;
@@ -47,6 +48,9 @@ Route::middleware(['auth', 'verified', EnsureSuperAdminWorkspace::class])
         });
 
         Route::put('users/{user}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
+
+        Route::put('users/{user}/lecturer-departments', [LecturerDepartmentController::class, 'update'])
+            ->name('users.lecturer-departments.update');
 
         Route::post('users/{user}/impersonation', [ImpersonationController::class, 'store'])
             ->name('users.impersonation.store');

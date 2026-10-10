@@ -22,6 +22,9 @@ enum AuditAction: string
     case UserDeleted = 'user.deleted';
     case UserRolesUpdated = 'user.roles-updated';
     case UserInvited = 'user.invited';
+    case LecturerAssigned = 'lecturer.assigned';
+    case LecturerReleased = 'lecturer.released';
+    case LecturerDepartmentsUpdated = 'lecturer.departments-updated';
     case ImpersonationStarted = 'impersonation.started';
     case ImpersonationEnded = 'impersonation.ended';
     case RolePermissionsUpdated = 'role.permissions-updated';
@@ -48,6 +51,9 @@ enum AuditAction: string
             self::UserDeleted => 'Akun dihapus',
             self::UserRolesUpdated => 'Peran akun diubah',
             self::UserInvited => 'Tautan aktivasi dikirim',
+            self::LecturerAssigned => 'Dosen ditambahkan ke prodi',
+            self::LecturerReleased => 'Dosen dilepas dari prodi',
+            self::LecturerDepartmentsUpdated => 'Program studi dosen diubah',
             self::ImpersonationStarted => 'Mulai melihat sebagai akun lain',
             self::ImpersonationEnded => 'Selesai melihat sebagai akun lain',
             self::RolePermissionsUpdated => 'Izin peran diubah',

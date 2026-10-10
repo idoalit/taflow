@@ -21,6 +21,7 @@ import {
 import { destroy, index, update } from '@/routes/superadmin/users';
 import { store as startImpersonating } from '@/routes/superadmin/users/impersonation';
 import { store as sendInvitation } from '@/routes/superadmin/users/invitation';
+import { update as updateLecturerDepartments } from '@/routes/superadmin/users/lecturer-departments';
 import { update as updateRoles } from '@/routes/superadmin/users/roles';
 import type { AccountRow, DepartmentOption } from '@/types';
 
@@ -31,13 +32,122 @@ type Props = {
         is_admin: boolean;
         admin_department_ids: number[];
         student: { number: string; department: string } | null;
-        lecturer: { number: string; departments: string[] } | null;
+        lecturer: {
+            number: string;
+            departments: string[];
+            department_ids: number[];
+            homebase_id: number | null;
+        } | null;
         created_at: string | null;
     };
     deletion: { allowed: boolean; reason: string | null };
     impersonable: { allowed: boolean; reason: string | null };
     departments: DepartmentOption[];
 };
+
+/**
+ * Every prodi a dosen works in, and which of them is the homebase. One table
+ * rather than a checklist and a separate select, so a homebase can never be
+ * picked from a prodi that is not ticked.
+ */
+function LecturerDepartments({
+    departments,
+    value,
+    homebase,
+    onChange,
+    error,
+}: {
+    departments: DepartmentOption[];
+    value: number[];
+    homebase: number | null;
+    onChange: (value: number[], homebase: number | null) => void;
+    error?: string;
+}) {
+    const toggle = (id: number, checked: boolean) => {
+        const next = checked
+            ? [...value, id]
+            : value.filter((kept) => kept !== id);
+
+        // Unticking the homebase leaves the choice open rather than moving it
+        // somewhere nobody chose; the first prodi ticked becomes it.
+        const nextHomebase =
+            homebase !== null && next.includes(homebase)
+                ? homebase
+                : next.length === 1
+                  ? next[0]
+                  : null;
+
+        onChange(next, nextHomebase);
+    };
+
+    return (
+        <fieldset className="m-0 border-0 p-0">
+            <legend className="sr-only">Program studi dosen</legend>
+
+            <table className="ind-table">
+                <thead>
+                    <tr>
+                        <th>Program Studi</th>
+                        <th className="w-[120px]">Homebase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {departments.map((department) => {
+                        const checked = value.includes(department.id);
+
+                        return (
+                            <tr key={department.id}>
+                                <td>
+                                    <label className="ind-check">
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={(event) =>
+                                                toggle(
+                                                    department.id,
+                                                    event.target.checked,
+                                                )
+                                            }
+                                        />
+                                        {department.name}
+                                        {!department.is_active && (
+                                            <span className="ind-muted">
+                                                {' '}
+                                                (tidak aktif)
+                                            </span>
+                                        )}
+                                    </label>
+                                </td>
+                                <td>
+                                    <input
+                                        type="radio"
+                                        name="homebase"
+                                        aria-label={`Jadikan ${department.name} homebase`}
+                                        className="h-4 w-4 cursor-pointer accent-[var(--ind-accent-700)] disabled:cursor-not-allowed"
+                                        checked={homebase === department.id}
+                                        disabled={!checked}
+                                        onChange={() =>
+                                            onChange(value, department.id)
+                                        }
+                                    />
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+
+            {error && (
+                <p
+                    className="mt-[5px] mb-0 text-[11.5px]"
+                    style={{ color: 'var(--ind-status-error-fg)' }}
+                >
+                    {error}
+                </p>
+            )}
+        </fieldset>
+    );
+}
 
 export default function SuperAdminUserShow({
     account,
@@ -60,6 +170,14 @@ export default function SuperAdminUserShow({
     });
 
     const removal = useForm({ email: '' });
+
+    const membership = useForm<{
+        department_ids: number[];
+        homebase_id: number | null;
+    }>({
+        department_ids: account.lecturer?.department_ids ?? [],
+        homebase_id: account.lecturer?.homebase_id ?? null,
+    });
 
     return (
         <>
@@ -177,7 +295,7 @@ export default function SuperAdminUserShow({
                         <p className="ind-muted m-0 text-[12.5px]">
                             {account.student
                                 ? 'Akun mahasiswa tidak dapat diberi peran pengelola.'
-                                : 'Peran mahasiswa dan dosen mengikuti data yang diimpor program studi, jadi hanya dua peran ini yang diatur di sini.'}
+                                : 'Peran mahasiswa dan dosen mengikuti data yang dikelola program studi, jadi hanya dua peran ini yang diatur di sini.'}
                         </p>
                     </div>
 
@@ -264,6 +382,59 @@ export default function SuperAdminUserShow({
                         </>
                     )}
                 </form>
+
+                {account.lecturer && (
+                    <form
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            membership.put(
+                                updateLecturerDepartments(account.id).url,
+                                { preserveScroll: true },
+                            );
+                        }}
+                        className="ind-page"
+                    >
+                        <div>
+                            <h6 className="m-0">Program Studi Dosen</h6>
+                            <p className="ind-muted m-0 mt-1 text-[12.5px]">
+                                Program studi tempat dosen ini dapat membimbing
+                                dan menguji, dan satu di antaranya sebagai
+                                homebase. Admin Prodi dapat menambahkan dosen ke
+                                prodinya sendiri; memindahkan homebase hanya
+                                dari sini.
+                            </p>
+                        </div>
+
+                        <LecturerDepartments
+                            departments={departments}
+                            value={membership.data.department_ids}
+                            homebase={membership.data.homebase_id}
+                            onChange={(ids, homebase) =>
+                                membership.setData({
+                                    department_ids: ids,
+                                    homebase_id: homebase,
+                                })
+                            }
+                            error={
+                                membership.errors.department_ids ??
+                                membership.errors.homebase_id
+                            }
+                        />
+
+                        <Btn
+                            type="submit"
+                            variant="primary"
+                            disabled={
+                                membership.processing || !membership.isDirty
+                            }
+                            className="self-start"
+                        >
+                            {membership.processing
+                                ? 'Menyimpan...'
+                                : 'Simpan Program Studi'}
+                        </Btn>
+                    </form>
+                )}
 
                 <div className="ind-section">
                     <h6>Lihat sebagai Akun Ini</h6>

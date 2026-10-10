@@ -2,16 +2,10 @@
 
 namespace App\Imports;
 
-use App\Enums\StudentStatus;
-use App\Enums\UserRole;
+use App\Actions\Academic\EnrollStudent;
 use App\Models\Department;
-use App\Models\Student;
-use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -28,7 +22,10 @@ class StudentImport implements ToCollection, WithHeadingRow
     /** @var array<int, string> */
     public array $errors = [];
 
-    public function __construct(private readonly Department $department) {}
+    public function __construct(
+        private readonly Department $department,
+        private readonly EnrollStudent $enroll = new EnrollStudent,
+    ) {}
 
     /**
      * @param  Collection<int, Collection<string, mixed>>  $rows
@@ -60,34 +57,16 @@ class StudentImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
-            $this->create($validator->validated());
+            $row = $validator->validated();
+
+            $this->enroll->handle($this->department, [
+                'name' => $row['nama'],
+                'email' => $row['email'],
+                'student_number' => $row['nim'],
+                'enrollment_year' => $row['angkatan'],
+            ]);
             $this->imported++;
         }
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    private function create(array $data): void
-    {
-        DB::transaction(function () use ($data): void {
-            $user = User::create([
-                'name' => $data['nama'],
-                'email' => $data['email'],
-                // Imported accounts have no usable password until the person
-                // resets it; nobody is handed one in a spreadsheet.
-                'password' => Hash::make(Str::random(40)),
-            ]);
-            $user->assignRole(UserRole::Student->value);
-
-            Student::create([
-                'user_id' => $user->id,
-                'department_id' => $this->department->id,
-                'student_number' => $data['nim'],
-                'enrollment_year' => $data['angkatan'],
-                'status' => StudentStatus::Active,
-            ]);
-        });
     }
 
     /**

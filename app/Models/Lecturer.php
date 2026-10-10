@@ -8,6 +8,7 @@ use App\Policies\LecturerPolicy;
 use Database\Factories\LecturerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,6 +50,27 @@ class Lecturer extends Model
     public function departments(): BelongsToMany
     {
         return $this->belongsToMany(Department::class)->withPivot('is_primary')->withTimestamps();
+    }
+
+    /**
+     * The prodi the dosen belongs to. Every other one in departments() is a
+     * prodi they also supervise or examine in.
+     */
+    public function homebase(): ?Department
+    {
+        return $this->departments->firstWhere('pivot.is_primary', true);
+    }
+
+    /**
+     * How many of a prodi's mahasiswa still have this dosen on their panel,
+     * as pembimbing or penguji. While it is not zero the dosen cannot leave
+     * that prodi: the workspace they do that work in would go with them.
+     */
+    public function panelSeatsIn(Department $department): int
+    {
+        return $this->supervisorAssignments()
+            ->whereHas('student', fn (Builder $query) => $query->where('department_id', $department->id))
+            ->count();
     }
 
     /** @return HasMany<StudentSupervisor, $this> */

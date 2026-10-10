@@ -1,6 +1,7 @@
 import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import {
+    BtnLink,
     DataTable,
     EmptyRow,
     Input,
@@ -8,7 +9,8 @@ import {
     Seg,
     Tag,
 } from '@/components/industry/ui';
-import { show } from '@/routes/admin/students';
+import { index as importData } from '@/routes/admin/import';
+import { create, show } from '@/routes/admin/students';
 import type { AdminStudentRow } from '@/types';
 
 type Props = {
@@ -48,6 +50,14 @@ export default function AdminStudentIndex({
                 <PageHeader
                     title="Mahasiswa"
                     description={`Kelola data mahasiswa ${department} dan penentuan pembimbing/penguji.`}
+                    actions={
+                        <>
+                            <BtnLink href={importData()}>Impor</BtnLink>
+                            <BtnLink href={create()} variant="primary">
+                                Tambah Mahasiswa
+                            </BtnLink>
+                        </>
+                    }
                 />
 
                 <div className="flex flex-wrap items-center gap-[var(--ind-space-3)]">

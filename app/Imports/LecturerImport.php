@@ -2,23 +2,21 @@
 
 namespace App\Imports;
 
-use App\Enums\LecturerStatus;
-use App\Enums\UserRole;
+use App\Actions\Academic\AssignLecturer;
+use App\Actions\Academic\RegisterLecturer;
 use App\Models\Department;
 use App\Models\Lecturer;
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 /**
- * Bulk enrolment of dosen. A dosen who already exists is attached to this
- * program studi rather than rejected — teaching in more than one prodi is
- * normal, and the workspace switcher exists for exactly that.
+ * Bulk enrolment of dosen. A dosen who already exists is added to this
+ * program studi rather than rejected — working in more than one prodi is
+ * normal, and the workspace switcher exists for exactly that. It goes through
+ * the same door as adding them by hand, so their homebase hears of it.
  */
 class LecturerImport implements ToCollection, WithHeadingRow
 {
@@ -31,7 +29,12 @@ class LecturerImport implements ToCollection, WithHeadingRow
     /** @var array<int, string> */
     public array $errors = [];
 
-    public function __construct(private readonly Department $department) {}
+    public function __construct(
+        private readonly Department $department,
+        private readonly User $actor,
+        private readonly RegisterLecturer $register = new RegisterLecturer,
+        private readonly AssignLecturer $assign = new AssignLecturer,
+    ) {}
 
     /**
      * @param  Collection<int, Collection<string, mixed>>  $rows
@@ -49,8 +52,10 @@ class LecturerImport implements ToCollection, WithHeadingRow
             $existing = Lecturer::where('lecturer_number', $data['nip'])->first();
 
             if ($existing !== null) {
-                $existing->departments()->syncWithoutDetaching([$this->department->id]);
-                $this->attached++;
+                // A dosen who is here already is not counted a second time.
+                if ($this->assign->handle($existing, $this->department, $this->actor)) {
+                    $this->attached++;
+                }
 
                 continue;
             }
@@ -71,34 +76,17 @@ class LecturerImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
-            $this->create($validator->validated());
+            $valid = $validator->validated();
+
+            $this->register->handle($this->department, [
+                'name' => $valid['nama'],
+                'email' => $valid['email'],
+                'lecturer_number' => $valid['nip'],
+                'academic_position' => $valid['jabatan'] ?? null,
+                'max_supervisions' => $valid['kuota_bimbingan'] ?? null,
+            ]);
             $this->imported++;
         }
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    private function create(array $data): void
-    {
-        DB::transaction(function () use ($data): void {
-            $user = User::create([
-                'name' => $data['nama'],
-                'email' => $data['email'],
-                'password' => Hash::make(Str::random(40)),
-            ]);
-            $user->assignRole(UserRole::Lecturer->value);
-
-            $lecturer = Lecturer::create([
-                'user_id' => $user->id,
-                'lecturer_number' => $data['nip'],
-                'academic_position' => $data['jabatan'] ?? null,
-                'max_supervisions' => $data['kuota_bimbingan'] ?? 10,
-                'status' => LecturerStatus::Active,
-            ]);
-
-            $lecturer->departments()->attach($this->department->id, ['is_primary' => true]);
-        });
     }
 
     /**

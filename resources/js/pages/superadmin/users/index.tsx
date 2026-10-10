@@ -64,7 +64,7 @@ export default function SuperAdminUserIndex({
             <div className="ind-page">
                 <PageHeader
                     title="Pengguna"
-                    description="Semua akun di seluruh program studi. Mahasiswa dan dosen ditambahkan lewat impor di program studinya."
+                    description="Semua akun di seluruh program studi. Mahasiswa dan dosen ditambahkan oleh program studinya."
                     actions={
                         <BtnLink href={create()} variant="primary">
                             Tambah Akun

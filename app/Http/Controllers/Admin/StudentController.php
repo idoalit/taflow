@@ -2,23 +2,29 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Academic\EnrollStudent;
+use App\Concerns\ProfileValidationRules;
+use App\Enums\AuditAction;
 use App\Enums\StudentStatus;
 use App\Enums\SupervisorRole;
+use App\Enums\UserRole;
 use App\Http\Controllers\Admin\Concerns\ScopesToDepartment;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AdminStudentResource;
+use App\Models\AuditLog;
 use App\Models\Lecturer;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class StudentController extends Controller
 {
-    use ScopesToDepartment;
+    use ProfileValidationRules, ScopesToDepartment;
 
     public function index(Request $request): Response
     {
@@ -42,6 +48,62 @@ class StudentController extends Controller
                 StudentStatus::cases(),
             ),
         ]);
+    }
+
+    public function create(Request $request): Response
+    {
+        Gate::authorize('create', Student::class);
+
+        return Inertia::render('admin/students/create', [
+            'department' => $this->department($request)->name,
+        ]);
+    }
+
+    /**
+     * One mahasiswa, for when a spreadsheet is more than the job needs. The
+     * account is made without a password; its owner is mailed the link to set
+     * one.
+     */
+    public function store(Request $request, EnrollStudent $enroll): RedirectResponse
+    {
+        Gate::authorize('create', Student::class);
+
+        $department = $this->department($request);
+
+        $validated = $request->validate([
+            ...$this->profileRules(),
+            'student_number' => ['required', 'string', 'max:50', Rule::unique(Student::class)],
+            'enrollment_year' => ['required', 'integer', 'min:2000', 'max:2100'],
+        ], [
+            'email.unique' => 'Surel ini sudah terdaftar.',
+            'student_number.unique' => 'NIM ini sudah terdaftar.',
+        ], [
+            'name' => 'nama',
+            'email' => 'surel',
+            'student_number' => 'NIM',
+            'enrollment_year' => 'angkatan',
+        ]);
+
+        $student = $enroll->handle($department, $validated);
+
+        AuditLog::record(
+            $student->user,
+            AuditAction::UserCreated,
+            $request->user(),
+            changes: [
+                'name' => $student->user->name,
+                'email' => $student->user->email,
+                'role' => UserRole::Student->label(),
+                'student_number' => $student->student_number,
+                'department' => $department->name,
+            ],
+            request: $request,
+        );
+
+        Password::broker()->sendResetLink(['email' => $student->user->email]);
+
+        return to_route('admin.students.show', $student)
+            ->with('success', "Mahasiswa ditambahkan. Tautan aktivasi dikirim ke {$student->user->email}.");
     }
 
     public function show(Request $request, Student $student): Response

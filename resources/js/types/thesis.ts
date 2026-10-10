@@ -316,6 +316,10 @@ export type AdminLecturerRow = {
     email: string;
     lecturer_number: string;
     academic_position: string | null;
+    /** The prodi the dosen belongs to; null only for a record left without one. */
+    homebase: string | null;
+    /** Whether that prodi is the one the workspace is in. */
+    is_homebase: boolean;
     status: string;
     status_label: string;
     max_supervisions: number;

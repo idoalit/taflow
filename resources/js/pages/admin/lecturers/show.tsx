@@ -1,4 +1,12 @@
-import { Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogTitle,
+} from '@/components/industry/dialog';
 import {
     Avatar,
     Btn,
@@ -11,10 +19,16 @@ import {
     Tag,
 } from '@/components/industry/ui';
 import { index, update } from '@/routes/admin/lecturers';
+import { destroy as release } from '@/routes/admin/lecturers/membership';
 import type { AdminLecturerRow } from '@/types';
 
 type Props = {
-    lecturer: AdminLecturerRow & { initials: string; departments: string[] };
+    /** The prodi the workspace is in. */
+    department: string;
+    lecturer: AdminLecturerRow & {
+        initials: string;
+        departments: { name: string; is_homebase: boolean }[];
+    };
     students: {
         id: number;
         name: string;
@@ -22,14 +36,20 @@ type Props = {
         role_label: string;
     }[];
     statuses: { value: string; label: string }[];
+    release: { allowed: boolean; reason: string | null };
 };
 
 export default function AdminLecturerShow({
+    department,
     lecturer,
     students,
     statuses,
+    release: releasable,
 }: Props) {
     setLayoutProps({ title: 'Detail Dosen' });
+
+    const [confirmingRelease, setConfirmingRelease] = useState(false);
+    const [releasing, setReleasing] = useState(false);
 
     const form = useForm({
         max_supervisions: String(lecturer.max_supervisions),
@@ -60,8 +80,18 @@ export default function AdminLecturerShow({
 
                 <Card>
                     <CardKicker>Program Studi</CardKicker>
-                    <div className="ind-card-body">
-                        {lecturer.departments.join(', ')}
+                    <div className="ind-card-body flex flex-wrap gap-x-[var(--ind-space-6)] gap-y-[var(--ind-space-2)]">
+                        {lecturer.departments.map((member) => (
+                            <span
+                                key={member.name}
+                                className="flex items-center gap-2"
+                            >
+                                {member.name}
+                                {member.is_homebase && (
+                                    <Tag label="Homebase" tone="accent" />
+                                )}
+                            </span>
+                        ))}
                     </div>
                 </Card>
 
@@ -178,6 +208,56 @@ export default function AdminLecturerShow({
                         )}
                     </DataTable>
                 </div>
+
+                <div className="ind-section">
+                    <h6>Lepas dari Program Studi</h6>
+                    <p className="ind-muted m-0 mb-[var(--ind-space-3)] text-[12.5px]">
+                        {releasable.allowed
+                            ? `Dosen ini tidak lagi dapat ditugaskan di ${department} dan kehilangan workspace program studi ini. Akun dan homebase-nya tidak berubah.`
+                            : (releasable.reason ??
+                              'Dosen ini tidak dapat dilepas dari program studi ini.')}
+                    </p>
+                    <Btn
+                        variant="danger"
+                        className="self-start"
+                        disabled={!releasable.allowed}
+                        onClick={() => setConfirmingRelease(true)}
+                    >
+                        Lepas dari {department}
+                    </Btn>
+                </div>
+
+                <Dialog
+                    open={confirmingRelease}
+                    onOpenChange={setConfirmingRelease}
+                >
+                    <DialogContent>
+                        <DialogTitle>Lepas dosen ini?</DialogTitle>
+                        <DialogDescription>
+                            {lecturer.name} akan dikeluarkan dari daftar dosen{' '}
+                            {department} dan diberi tahu. Ia dapat ditambahkan
+                            kembali kapan saja lewat NIP-nya.
+                        </DialogDescription>
+
+                        <DialogFooter>
+                            <Btn onClick={() => setConfirmingRelease(false)}>
+                                Batal
+                            </Btn>
+                            <Btn
+                                variant="danger"
+                                disabled={releasing}
+                                onClick={() =>
+                                    router.delete(release(lecturer.id).url, {
+                                        onStart: () => setReleasing(true),
+                                        onFinish: () => setReleasing(false),
+                                    })
+                                }
+                            >
+                                {releasing ? 'Melepas...' : 'Lepas Dosen'}
+                            </Btn>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </>
     );

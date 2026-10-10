@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ExamRequestController;
 use App\Http\Controllers\Admin\ExamScheduleController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\LecturerController;
+use App\Http\Controllers\Admin\LecturerMembershipController;
 use App\Http\Controllers\Admin\MonitoringController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\RubricController;
@@ -20,14 +21,25 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function (): void {
     Route::controller(StudentController::class)->group(function (): void {
         Route::get('students', 'index')->name('students.index');
+        Route::get('students/create', 'create')->name('students.create');
+        Route::post('students', 'store')->name('students.store');
         Route::get('students/{student}', 'show')->name('students.show');
         Route::put('students/{student}/supervisors', 'updateSupervisors')->name('students.supervisors.update');
     });
 
     Route::controller(LecturerController::class)->group(function (): void {
         Route::get('lecturers', 'index')->name('lecturers.index');
+        Route::get('lecturers/create', 'create')->name('lecturers.create');
+        Route::post('lecturers', 'store')->name('lecturers.store');
         Route::get('lecturers/{lecturer}', 'show')->name('lecturers.show');
         Route::put('lecturers/{lecturer}', 'update')->name('lecturers.update');
+    });
+
+    // Whether a dosen is in the program studi the workspace names — apart
+    // from the dosen's own record, which other prodi share.
+    Route::controller(LecturerMembershipController::class)->group(function (): void {
+        Route::post('lecturers/{lecturer}/membership', 'store')->name('lecturers.membership.store');
+        Route::delete('lecturers/{lecturer}/membership', 'destroy')->name('lecturers.membership.destroy');
     });
 
     Route::controller(ImportController::class)->group(function (): void {

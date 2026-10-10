@@ -48,6 +48,10 @@ class ActivityLogController extends Controller
         'role' => 'peran',
         'roles' => 'peran',
         'admin_prodi' => 'admin prodi',
+        'department' => 'program studi',
+        'departments' => 'program studi',
+        'lecturer_number' => 'NIP',
+        'student_number' => 'NIM',
         'decision' => 'keputusan',
         'final_score' => 'nilai akhir',
     ];

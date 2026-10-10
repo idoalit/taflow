@@ -81,7 +81,7 @@ class ImportController extends Controller
 
         $import = $validated['target'] === 'students'
             ? new StudentImport($department)
-            : new LecturerImport($department);
+            : new LecturerImport($department, $request->user());
 
         Excel::import($import, $request->file('file'));
 

@@ -94,8 +94,8 @@ class UserController extends Controller
     }
 
     /**
-     * Only the two kinds of account no import can make: an Admin Prodi and
-     * another superadmin. Nobody is handed a password — the new account gets
+     * Only the two kinds of account a program studi does not make for itself:
+     * an Admin Prodi and another superadmin. Nobody is handed a password — the new account gets
      * the same reset link everyone else activates with.
      */
     public function store(Request $request): RedirectResponse
@@ -173,6 +173,8 @@ class UserController extends Controller
                 'lecturer' => $user->lecturer === null ? null : [
                     'number' => $user->lecturer->lecturer_number,
                     'departments' => $user->lecturer->departments->pluck('name')->all(),
+                    'department_ids' => $user->lecturer->departments->modelKeys(),
+                    'homebase_id' => $user->lecturer->homebase()?->id,
                 ],
                 'created_at' => $this->longDateTime($user->created_at),
             ],

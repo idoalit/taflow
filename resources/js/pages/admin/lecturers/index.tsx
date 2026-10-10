@@ -1,6 +1,7 @@
 import { Head, router, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import {
+    BtnLink,
     DataTable,
     EmptyRow,
     Input,
@@ -8,7 +9,8 @@ import {
     Seg,
     Tag,
 } from '@/components/industry/ui';
-import { show } from '@/routes/admin/lecturers';
+import { index as importData } from '@/routes/admin/import';
+import { create, show } from '@/routes/admin/lecturers';
 import type { AdminLecturerRow } from '@/types';
 
 type Props = {
@@ -45,6 +47,14 @@ export default function AdminLecturerIndex({
                 <PageHeader
                     title="Dosen"
                     description={`Dosen di ${department} beserta beban bimbingannya.`}
+                    actions={
+                        <>
+                            <BtnLink href={importData()}>Impor</BtnLink>
+                            <BtnLink href={create()} variant="primary">
+                                Tambah Dosen
+                            </BtnLink>
+                        </>
+                    }
                 />
 
                 <div className="flex flex-wrap items-center gap-[var(--ind-space-3)]">
@@ -75,6 +85,7 @@ export default function AdminLecturerIndex({
                         <tr>
                             <th>Dosen</th>
                             <th>NIP</th>
+                            <th>Homebase</th>
                             <th>Jabatan</th>
                             <th>Beban Bimbingan</th>
                             <th>Status</th>
@@ -82,7 +93,7 @@ export default function AdminLecturerIndex({
                     }
                 >
                     {visible.length === 0 ? (
-                        <EmptyRow colSpan={5}>
+                        <EmptyRow colSpan={6}>
                             Tidak ada dosen yang cocok dengan filter ini.
                         </EmptyRow>
                     ) : (
@@ -100,6 +111,15 @@ export default function AdminLecturerIndex({
                                 </td>
                                 <td className="ind-muted">
                                     {lecturer.lecturer_number}
+                                </td>
+                                <td>
+                                    {lecturer.is_homebase ? (
+                                        <Tag label="Prodi ini" tone="accent" />
+                                    ) : (
+                                        <span className="ind-muted">
+                                            {lecturer.homebase ?? '—'}
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="ind-muted">
                                     {lecturer.academic_position ?? '—'}
