@@ -17,7 +17,7 @@ final readonly class StoreThesisDocument
      */
     public function __invoke(UploadedFile $file, Student $student, string $area): array
     {
-        $path = $file->store("thesis/{$student->id}/{$area}", 'local');
+        $path = $file->store("thesis/{$student->id}/{$area}", 'documents');
 
         if ($path === false) {
             throw new RuntimeException('Gagal menyimpan dokumen yang diunggah.');

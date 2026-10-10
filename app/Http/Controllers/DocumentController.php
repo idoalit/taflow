@@ -37,7 +37,7 @@ class DocumentController extends Controller
         $path = (string) $request->query('path');
 
         abort_unless($this->isOwnedPath($path), 404);
-        abort_unless(Storage::disk('local')->exists($path), 404);
+        abort_unless(Storage::disk('documents')->exists($path), 404);
 
         $student = Student::find($this->studentIdFrom($path));
 
@@ -48,7 +48,7 @@ class DocumentController extends Controller
         $mime = self::INLINE_TYPES[strtolower(pathinfo($path, PATHINFO_EXTENSION))] ?? null;
 
         if ($request->boolean('preview') && $mime !== null) {
-            return Storage::disk('local')->response($path, $name, [
+            return Storage::disk('documents')->response($path, $name, [
                 'Content-Type' => $mime,
                 // Belt and braces: even for the allowed types, forbid scripts
                 // and plugins so a crafted file cannot act on our origin.
@@ -57,7 +57,7 @@ class DocumentController extends Controller
             ]);
         }
 
-        return Storage::disk('local')->download($path, $name, [
+        return Storage::disk('documents')->download($path, $name, [
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

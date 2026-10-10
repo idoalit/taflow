@@ -46,19 +46,12 @@ class Signature extends Model
      */
     public function toDataUri(): ?string
     {
-        $disk = Storage::disk('local');
+        $disk = Storage::disk('documents');
 
         if (! $disk->exists($this->path)) {
             return null;
         }
 
         return 'data:image/png;base64,'.base64_encode($disk->get($this->path));
-    }
-
-    public function absolutePath(): ?string
-    {
-        $disk = Storage::disk('local');
-
-        return $disk->exists($this->path) ? $disk->path($this->path) : null;
     }
 }

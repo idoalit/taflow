@@ -49,7 +49,7 @@ final readonly class DemoFile
     {
         $path = "signatures/{$user->id}/".str()->random(40).'.png';
 
-        Storage::disk('local')->put($path, self::renderSignature($user->name));
+        Storage::disk('documents')->put($path, self::renderSignature($user->name));
 
         return $path;
     }
@@ -61,7 +61,7 @@ final readonly class DemoFile
     {
         $path = "thesis/{$student->id}/{$area}/".str()->random(40).'.'.pathinfo($name, PATHINFO_EXTENSION);
 
-        Storage::disk('local')->put($path, $contents);
+        Storage::disk('documents')->put($path, $contents);
 
         return ['path' => $path, 'name' => $name, 'size' => strlen($contents)];
     }

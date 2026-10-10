@@ -69,6 +69,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Trusted Proxies
+    |--------------------------------------------------------------------------
+    |
+    | The reverse proxies allowed to speak for the client: a comma-separated
+    | list of addresses or CIDR ranges, or "*" for whichever host connects.
+    | Only from these is X-Forwarded-For / -Proto / -Host believed. Left
+    | empty, none is — which is right for a machine that faces the browser
+    | itself, and wrong behind a gateway: links come out as http://, and the
+    | audit trail and the login throttle see the gateway's address for
+    | everybody.
+    |
+    */
+
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

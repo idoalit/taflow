@@ -1,0 +1,64 @@
+# Whatever is not needed to build the image stays out of the build context —
+# above all anything that carries a secret or a developer's own data.
+
+.git
+.github
+.dockerignore
+Dockerfile
+compose.yaml
+
+# Secrets and local configuration. The container is configured through its
+# environment, never through a file baked into the image.
+.env
+.env.*
+!.env.example
+auth.json
+
+# Installed and built inside the image.
+vendor
+node_modules
+public/build
+public/hot
+public/storage
+public/frankenphp-worker.php
+bootstrap/cache/*.php
+resources/js/actions
+resources/js/routes
+resources/js/wayfinder
+
+# Runtime state. The image recreates the empty directories it needs.
+storage
+database/*.sqlite*
+
+# The FrankenPHP binary Octane downloads for local use; the image has its own.
+frankenphp
+**/caddy
+
+# Tests and development tooling.
+tests
+phpunit.xml
+phpstan.neon
+pint.json
+playwright.config.ts
+playwright-report
+test-results
+.phpunit.cache
+.phpunit.result.cache
+
+# Editor and assistant configuration.
+.agents
+.claude
+.codex
+.cursor
+.junie
+.idea
+.vscode
+.fleet
+.nova
+.zed
+.mcp.json
+AGENTS.md
+CLAUDE.md
+boost.json
+opencode.json
+.DS_Store

@@ -30,15 +30,11 @@ class SystemSettingController extends Controller
     {
         Gate::authorize('manage', SystemSetting::class);
 
-        $institution = $settings->institution();
-
         return Inertia::render('superadmin/settings/index', [
             'institution' => [
-                ...Arr::only($institution, self::TEXT_FIELDS),
-                'logo' => $institution['logo_file'] === null
-                    ? null
-                    : SystemSettings::dataUri($institution['logo_file']),
-                'has_uploaded_logo' => $this->uploadedLogo($settings) !== null,
+                ...$settings->institution(),
+                'logo' => $settings->logo(),
+                'has_uploaded_logo' => $settings->uploadedLogoPath() !== null,
             ],
             'thesisDefaults' => $settings->thesisDefaults(),
             'alignmentModes' => $this->alignmentModeOptions(),
@@ -72,15 +68,15 @@ class SystemSettingController extends Controller
             'logo' => 'logo',
         ]);
 
-        $logoPath = $this->uploadedLogo($settings);
+        $logoPath = $settings->uploadedLogoPath();
 
         if ($request->hasFile('logo')) {
-            $stored = $request->file('logo')->store('institution', 'public');
+            $stored = $request->file('logo')->store('institution', 'documents');
 
             abort_if($stored === false, 500, 'Gagal menyimpan logo yang diunggah.');
 
             if ($logoPath !== null) {
-                Storage::disk('public')->delete($logoPath);
+                Storage::disk('documents')->delete($logoPath);
             }
 
             $logoPath = $stored;
@@ -104,13 +100,13 @@ class SystemSettingController extends Controller
     {
         Gate::authorize('manage', SystemSetting::class);
 
-        $logoPath = $this->uploadedLogo($settings);
+        $logoPath = $settings->uploadedLogoPath();
 
         if ($logoPath === null) {
             return back();
         }
 
-        Storage::disk('public')->delete($logoPath);
+        Storage::disk('documents')->delete($logoPath);
 
         $setting = $settings->put(SystemSettings::INSTITUTION, [
             ...($settings->get(SystemSettings::INSTITUTION) ?? []),
@@ -133,13 +129,6 @@ class SystemSettingController extends Controller
         $this->audit($request, $setting, 'Aturan tugas akhir bawaan');
 
         return back()->with('success', 'Aturan bawaan tersimpan. Program studi yang sudah mengatur sendiri tidak berubah.');
-    }
-
-    private function uploadedLogo(SystemSettings $settings): ?string
-    {
-        $path = $settings->get(SystemSettings::INSTITUTION)['logo_path'] ?? null;
-
-        return is_string($path) && $path !== '' ? $path : null;
     }
 
     private function audit(Request $request, SystemSetting $setting, string $group): void

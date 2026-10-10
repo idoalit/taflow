@@ -52,7 +52,7 @@ final readonly class BuildExamDocument
                 'address' => $institution['address'],
                 'phone' => $institution['phone'],
                 'website' => $institution['website'],
-                'logo' => $this->logoDataUri($institution['logo_file']),
+                'logo' => $this->settings->logo(),
             ],
             'student' => [
                 'name' => $student->user->name,
@@ -271,10 +271,5 @@ final readonly class BuildExamDocument
             'label' => mb_strtoupper($result->label()),
             'chosen' => $result === $chosen,
         ], ExamResult::cases());
-    }
-
-    private function logoDataUri(?string $file): ?string
-    {
-        return $file === null ? null : SystemSettings::dataUri($file);
     }
 }

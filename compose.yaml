@@ -1,0 +1,81 @@
+# FiPro in production.
+#
+#   cp .env.production.example .env.production      # then fill it in
+#   docker compose --env-file .env.production build
+#   docker compose --env-file .env.production up -d
+#   docker compose --env-file .env.production run --rm --no-deps app \
+#       php artisan fipro:superadmin admin@kampus.ac.id
+#
+# `--env-file` is what lets the two values this file reads itself (the address
+# and port to listen on) come from the same file the application reads.
+#
+# The stack is the application and nothing else. MySQL, Redis and the object
+# store are servers of their own, named in .env.production. There is no queue
+# worker and no scheduler because the application queues and schedules nothing.
+
+name: fipro
+
+x-fipro: &fipro
+    image: ${FIPRO_IMAGE:-fipro:latest}
+    build:
+        context: .
+        target: runtime
+    env_file:
+        - .env.production
+    init: true
+    cap_drop:
+        - ALL
+    security_opt:
+        - no-new-privileges:true
+    logging:
+        driver: json-file
+        options:
+            max-size: 10m
+            max-file: '5'
+
+services:
+    # Runs once on every `up`, before the application starts: migrations, then
+    # the roles and permissions. If it fails, the application is not started on
+    # a schema it does not match.
+    migrate:
+        <<: *fipro
+        command: ['release']
+        restart: 'no'
+
+    app:
+        <<: *fipro
+        command: ['serve']
+        depends_on:
+            migrate:
+                condition: service_completed_successfully
+        restart: unless-stopped
+        # Plain HTTP: TLS ends at the gateway. Bound to loopback unless told
+        # otherwise, so nothing is exposed by accident — set APP_BIND to the
+        # address the gateway reaches this host on.
+        ports:
+            - '${APP_BIND:-127.0.0.1}:${APP_PORT:-8000}:8000'
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'php',
+                    '-r',
+                    "exit(@file_get_contents('http://127.0.0.1:8000/up') === false ? 1 : 0);",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 3
+            start_period: 30s
+        # Long enough for a request that is rendering a PDF to finish before the
+        # workers are stopped.
+        stop_grace_period: 30s
+        ulimits:
+            nofile:
+                soft: 65536
+                hard: 65536
+        mem_limit: ${APP_MEMORY:-2g}
+        # 0 leaves the CPUs unlimited, which is what a host that runs only this
+        # wants. Set it when the host is shared.
+        cpus: ${APP_CPUS:-0}
+        tmpfs:
+            - /tmp

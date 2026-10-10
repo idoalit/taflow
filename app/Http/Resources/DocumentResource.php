@@ -31,7 +31,7 @@ class DocumentResource extends JsonResource
         $path = $this->resource['path'];
 
         $name = $this->resource['name'] ?? basename($path);
-        $exists = Storage::disk('local')->exists($path);
+        $exists = Storage::disk('documents')->exists($path);
 
         return [
             'name' => $name,

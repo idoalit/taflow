@@ -75,7 +75,7 @@ final readonly class CaptureSignature
     {
         $path = "signatures/{$user->id}/".Str::uuid()->toString().'.png';
 
-        Storage::disk('local')->put($path, $binary);
+        Storage::disk('documents')->put($path, $binary);
 
         return Signature::create([
             'user_id' => $user->id,

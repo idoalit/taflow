@@ -38,6 +38,39 @@ return [
             'report' => false,
         ],
 
+        /*
+        | Everything the application is handed to keep: proposals, exam
+        | documents, signatures, the institution's logo. All of it is private —
+        | each file is read back through a controller that checks who is
+        | asking — so one disk holds it, and where that disk lives is the only
+        | thing that differs between a laptop and production.
+        |
+        | "local" keeps the files under storage/app/private. "s3" sends them to
+        | an S3-compatible store such as MinIO, which is what lets the
+        | application's own container hold no state at all.
+        */
+        'documents' => env('DOCUMENTS_DISK', 'local') === 's3'
+            ? [
+                'driver' => 's3',
+                'key' => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+                'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+                'bucket' => env('AWS_BUCKET'),
+                'endpoint' => env('AWS_ENDPOINT'),
+                'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
+                // A document that failed to reach the store must not be
+                // recorded as saved, so a failed write is an error, not a
+                // quiet `false`.
+                'throw' => true,
+                'report' => false,
+            ]
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/private'),
+                'throw' => false,
+                'report' => false,
+            ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureErrorPages();
+        $this->configureTrustedProxies();
 
         // spatie's Role is not ours to annotate with #[UsePolicy].
         Gate::policy(Role::class, RolePolicy::class);
@@ -78,6 +80,25 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Believe the gateway in front of the application, and nobody else, about
+     * who the client is and whether they came over https. Read from
+     * configuration here rather than set in bootstrap/app.php, where the
+     * configuration is not loaded yet.
+     */
+    protected function configureTrustedProxies(): void
+    {
+        $proxies = config('app.trusted_proxies');
+
+        if (! is_string($proxies) || trim($proxies) === '') {
+            return;
+        }
+
+        TrustProxies::at(trim($proxies) === '*'
+            ? '*'
+            : array_values(array_filter(array_map(trim(...), explode(',', $proxies)))));
     }
 
     /**

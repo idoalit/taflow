@@ -39,25 +39,29 @@ class ExamRequestResource extends JsonResource
             'verified_at' => $this->shortDate($this->admin_verified_at ?? $this->supervisor_verified_at),
             'student_notes' => $this->student_notes,
             'documents' => collect($this->documents ?? [])
-                ->map(fn (array $document): array => [
-                    'name' => $document['name'],
-                    'kind' => strtoupper(pathinfo($document['name'], PATHINFO_EXTENSION)) ?: 'FILE',
-                    'previewable' => Storage::disk('local')->exists($document['path'])
-                        && DocumentController::isPreviewable($document['path']),
-                    'url' => Storage::disk('local')->exists($document['path'])
-                        ? route('documents.show', [
-                            'path' => $document['path'],
-                            'name' => $document['name'],
-                        ])
-                        : null,
-                    'preview_url' => Storage::disk('local')->exists($document['path'])
-                        ? route('documents.show', [
-                            'path' => $document['path'],
-                            'name' => $document['name'],
-                            'preview' => 1,
-                        ])
-                        : null,
-                ])
+                ->map(function (array $document): array {
+                    // Asked once: on an object store every check is a round trip.
+                    $exists = Storage::disk('documents')->exists($document['path']);
+
+                    return [
+                        'name' => $document['name'],
+                        'kind' => strtoupper(pathinfo($document['name'], PATHINFO_EXTENSION)) ?: 'FILE',
+                        'previewable' => $exists && DocumentController::isPreviewable($document['path']),
+                        'url' => $exists
+                            ? route('documents.show', [
+                                'path' => $document['path'],
+                                'name' => $document['name'],
+                            ])
+                            : null,
+                        'preview_url' => $exists
+                            ? route('documents.show', [
+                                'path' => $document['path'],
+                                'name' => $document['name'],
+                                'preview' => 1,
+                            ])
+                            : null,
+                    ];
+                })
                 ->values()
                 ->all(),
             'exam' => $this->whenLoaded('exam', fn () => $this->exam === null ? null : [

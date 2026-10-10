@@ -39,11 +39,14 @@ final class SystemSettings
     /** @var array<string, array<string, mixed>|null> */
     private array $loaded = [];
 
+    /** False until looked up; after that the data URI, or null for no logo. */
+    private string|false|null $logo = false;
+
     /**
      * The letterhead of every official document. What the superadmin saved
      * wins; until then the deployment's own configuration stands.
      *
-     * @return array{name: string, unit: string|null, address: string|null, phone: string|null, website: string|null, city: string|null, logo_file: string|null}
+     * @return array{name: string, unit: string|null, address: string|null, phone: string|null, website: string|null, city: string|null}
      */
     public function institution(): array
     {
@@ -60,7 +63,6 @@ final class SystemSettings
             'phone' => $text('phone'),
             'website' => $text('website'),
             'city' => $text('city'),
-            'logo_file' => $this->logoFile($stored),
         ];
     }
 
@@ -99,43 +101,62 @@ final class SystemSettings
         $setting = SystemSetting::updateOrCreate(['key' => $key], ['value' => $value]);
 
         $this->loaded[$key] = $value;
+        $this->logo = false;
 
         return $setting;
     }
 
     /**
-     * A logo as something a PDF or an <img> can carry inline, so neither needs
-     * the storage symlink to exist.
+     * The letterhead logo as a data URI, or null when there is none. Read from
+     * storage as bytes rather than by path: the disk it is on may be an object
+     * store, which has no path to give, and a PDF or an <img> can carry the
+     * image inline either way.
+     *
+     * Kept apart from institution(), which every document and the public
+     * verification page call for the name alone.
      */
-    public static function dataUri(string $file): string
+    public function logo(): ?string
     {
-        $mime = match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
+        if ($this->logo !== false) {
+            return $this->logo;
+        }
+
+        $uploaded = $this->uploadedLogoPath();
+
+        if ($uploaded !== null) {
+            $contents = Storage::disk('documents')->get($uploaded);
+
+            if ($contents !== null) {
+                return $this->logo = self::dataUri($contents, $uploaded);
+            }
+        }
+
+        // One named in configuration is a file shipped under public/.
+        $configured = config('institution.logo_path');
+
+        return $this->logo = is_string($configured) && $configured !== '' && file_exists(public_path($configured))
+            ? self::dataUri((string) file_get_contents(public_path($configured)), $configured)
+            : null;
+    }
+
+    /**
+     * Where the logo the superadmin uploaded is kept on the documents disk.
+     */
+    public function uploadedLogoPath(): ?string
+    {
+        $path = $this->get(self::INSTITUTION)['logo_path'] ?? null;
+
+        return is_string($path) && $path !== '' ? $path : null;
+    }
+
+    private static function dataUri(string $contents, string $name): string
+    {
+        $mime = match (strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
             'svg' => 'image/svg+xml',
             'jpg', 'jpeg' => 'image/jpeg',
             default => 'image/png',
         };
 
-        return "data:{$mime};base64,".base64_encode((string) file_get_contents($file));
-    }
-
-    /**
-     * An uploaded logo lives on the public disk; one named in configuration is
-     * a file shipped under public/.
-     *
-     * @param  array<string, mixed>|null  $stored
-     */
-    private function logoFile(?array $stored): ?string
-    {
-        $uploaded = $stored['logo_path'] ?? null;
-
-        if (is_string($uploaded) && $uploaded !== '' && Storage::disk('public')->exists($uploaded)) {
-            return Storage::disk('public')->path($uploaded);
-        }
-
-        $configured = config('institution.logo_path');
-
-        return is_string($configured) && $configured !== '' && file_exists(public_path($configured))
-            ? public_path($configured)
-            : null;
+        return "data:{$mime};base64,".base64_encode($contents);
     }
 }
