@@ -149,14 +149,40 @@ final class SystemSettings
         return is_string($path) && $path !== '' ? $path : null;
     }
 
-    private static function dataUri(string $contents, string $name): string
+    /**
+     * Where the browser fetches the logo from to use as the tab icon, or null
+     * to keep the application's own favicon.
+     *
+     * An uploaded logo is served through the application, with its stored
+     * path as the version so a new upload is never hidden behind the cached
+     * old one. One named in configuration is already a public file.
+     */
+    public function logoUrl(): ?string
     {
-        $mime = match (strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
+        $uploaded = $this->uploadedLogoPath();
+
+        if ($uploaded !== null) {
+            return route('institution.logo', ['v' => substr(hash('sha256', $uploaded), 0, 12)]);
+        }
+
+        $configured = config('institution.logo_path');
+
+        return is_string($configured) && $configured !== '' && file_exists(public_path($configured))
+            ? asset($configured)
+            : null;
+    }
+
+    public static function logoMimeType(string $name): string
+    {
+        return match (strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
             'svg' => 'image/svg+xml',
             'jpg', 'jpeg' => 'image/jpeg',
             default => 'image/png',
         };
+    }
 
-        return "data:{$mime};base64,".base64_encode($contents);
+    private static function dataUri(string $contents, string $name): string
+    {
+        return 'data:'.self::logoMimeType($name).';base64,'.base64_encode($contents);
     }
 }

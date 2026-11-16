@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentVerificationController;
+use App\Http\Controllers\InstitutionLogoController;
 use App\Http\Controllers\SuperAdmin\ImpersonationController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,9 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 Route::get('/', [AuthenticatedSessionController::class, 'create'])
     ->middleware('guest')
     ->name('home');
+
+// Public by design: the browser's tab icon, the same logo the sign-in screen shows.
+Route::get('logo-institusi', InstitutionLogoController::class)->name('institution.logo');
 
 // Public by design: the page a document's QR code leads to.
 Route::get('verifikasi/{token}', [DocumentVerificationController::class, 'show'])
