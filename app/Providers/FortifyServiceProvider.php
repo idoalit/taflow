@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\ResetUserPassword;
+use App\Support\SingleSignOn;
 use App\Support\SystemSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -51,6 +52,7 @@ class FortifyServiceProvider extends ServiceProvider
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'status' => $request->session()->get('status'),
             'institution' => $this->institution(app(SystemSettings::class)),
+            'sso' => $this->singleSignOn(app(SingleSignOn::class)),
         ]));
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/reset-password', [
@@ -87,6 +89,16 @@ class FortifyServiceProvider extends ServiceProvider
             'unit' => $institution['unit'],
             'logo' => rescue(fn (): ?string => $settings->logo()),
         ];
+    }
+
+    /**
+     * The single sign-on button, or null when it is not configured.
+     *
+     * @return array{label: string}|null
+     */
+    private function singleSignOn(SingleSignOn $singleSignOn): ?array
+    {
+        return $singleSignOn->enabled() ? ['label' => $singleSignOn->label()] : null;
     }
 
     /**

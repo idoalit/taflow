@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\SingleSignOnController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentVerificationController;
 use App\Http\Controllers\InstitutionLogoController;
@@ -14,6 +15,12 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 Route::get('/', [AuthenticatedSessionController::class, 'create'])
     ->middleware('guest')
     ->name('home');
+
+// Sign-in through the institution's Authelia. Only offered once configured.
+Route::middleware('guest')->controller(SingleSignOnController::class)->group(function (): void {
+    Route::get('auth/sso', 'redirect')->name('login.sso');
+    Route::get('auth/sso/callback', 'callback')->middleware('throttle:10,1')->name('login.sso.callback');
+});
 
 // Public by design: the browser's tab icon, the same logo the sign-in screen shows.
 Route::get('logo-institusi', InstitutionLogoController::class)->name('institution.logo');

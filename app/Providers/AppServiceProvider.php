@@ -12,11 +12,14 @@ use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\ExceptionResponse;
 use Inertia\Inertia;
+use SocialiteProviders\Authelia\Provider as AutheliaProvider;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
@@ -42,6 +45,10 @@ class AppServiceProvider extends ServiceProvider
 
         // spatie's Role is not ours to annotate with #[UsePolicy].
         Gate::policy(Role::class, RolePolicy::class);
+
+        Event::listen(function (SocialiteWasCalled $event): void {
+            $event->extendSocialite('authelia', AutheliaProvider::class);
+        });
     }
 
     /**

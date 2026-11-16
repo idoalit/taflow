@@ -1,12 +1,12 @@
 import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import { usePasskeyVerify } from '@laravel/passkeys/react';
-import { KeyRound } from 'lucide-react';
+import { KeyRound, ShieldCheck } from 'lucide-react';
 import { BlueprintCorners } from '@/components/industry/blueprint';
 import PasswordInput from '@/components/industry/password-input';
 import { ThesisJourney } from '@/components/industry/thesis-journey';
 import { Btn, Field, Input } from '@/components/industry/ui';
 import { Spinner } from '@/components/ui/spinner';
-import { store } from '@/routes/login';
+import { sso as ssoRedirect, store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 type Institution = {
@@ -15,11 +15,27 @@ type Institution = {
     logo: string | null;
 };
 
+type SingleSignOn = {
+    label: string;
+};
+
 type Props = {
     status?: string;
     canResetPassword: boolean;
     institution: Institution;
+    sso: SingleSignOn | null;
 };
+
+function ErrorText({ children }: { children: string }) {
+    return (
+        <p
+            className="mt-[5px] mb-0 text-[11.5px]"
+            style={{ color: 'var(--ind-status-error-fg)' }}
+        >
+            {children}
+        </p>
+    );
+}
 
 /**
  * Whose application this is. The institution's logo when it has uploaded one;
@@ -68,22 +84,44 @@ function Brand({ institution }: { institution: Institution }) {
 }
 
 /**
+ * The institution's own sign-in. A plain link rather than an Inertia visit:
+ * the browser has to leave for Authelia and come back.
+ */
+function SingleSignOnButton({
+    sso,
+    error,
+}: {
+    sso: SingleSignOn;
+    error?: string;
+}) {
+    return (
+        <div>
+            <a
+                href={ssoRedirect.url()}
+                className="ind-btn ind-btn-secondary ind-btn-block py-2"
+                data-test="sso-button"
+            >
+                <ShieldCheck size={16} strokeWidth={1.5} />
+                {sso.label}
+            </a>
+            {error && <ErrorText>{error}</ErrorText>}
+        </div>
+    );
+}
+
+/**
  * Offered only where the browser can do it, and above the form: someone with a
  * passkey has no reason to type anything.
  */
-function PasskeySignIn() {
-    const { verify, isLoading, error, isSupported } = usePasskeyVerify({
-        onSuccess: (response) => {
-            router.visit(response.redirect ?? '/dashboard');
-        },
-    });
-
-    if (!isSupported) {
-        return null;
-    }
+function PasskeySignIn({
+    passkey,
+}: {
+    passkey: ReturnType<typeof usePasskeyVerify>;
+}) {
+    const { verify, isLoading, error } = passkey;
 
     return (
-        <>
+        <div>
             <Btn block onClick={verify} disabled={isLoading} className="py-2">
                 {isLoading ? (
                     <Spinner />
@@ -92,27 +130,24 @@ function PasskeySignIn() {
                 )}
                 {isLoading ? 'Memeriksa passkey…' : 'Masuk dengan passkey'}
             </Btn>
-            {error && (
-                <p
-                    className="mt-[5px] mb-0 text-[11.5px]"
-                    style={{ color: 'var(--ind-status-error-fg)' }}
-                >
-                    {error}
-                </p>
-            )}
+            {error && <ErrorText>{error}</ErrorText>}
+        </div>
+    );
+}
 
-            <div className="my-[var(--ind-space-4)] flex items-center gap-[var(--ind-space-3)]">
-                <span
-                    className="h-px flex-1"
-                    style={{ background: 'var(--ind-divider)' }}
-                />
-                <span className="ind-eyebrow">atau dengan surel</span>
-                <span
-                    className="h-px flex-1"
-                    style={{ background: 'var(--ind-divider)' }}
-                />
-            </div>
-        </>
+function EmailDivider() {
+    return (
+        <div className="my-[var(--ind-space-4)] flex items-center gap-[var(--ind-space-3)]">
+            <span
+                className="h-px flex-1"
+                style={{ background: 'var(--ind-divider)' }}
+            />
+            <span className="ind-eyebrow">atau dengan surel</span>
+            <span
+                className="h-px flex-1"
+                style={{ background: 'var(--ind-divider)' }}
+            />
+        </div>
     );
 }
 
@@ -125,7 +160,16 @@ export default function Login({
     status,
     canResetPassword,
     institution,
+    sso,
 }: Props) {
+    const { errors } = usePage().props;
+    const passkey = usePasskeyVerify({
+        onSuccess: (response) => {
+            router.visit(response.redirect ?? '/dashboard');
+        },
+    });
+    const hasOtherSignIn = sso !== null || passkey.isSupported;
+
     return (
         <div className="ind grid min-h-dvh lg:grid-cols-[minmax(440px,2fr)_3fr]">
             <Head title="Masuk" />
@@ -157,7 +201,20 @@ export default function Login({
                         )}
 
                         <div className="mt-[var(--ind-space-6)]">
-                            <PasskeySignIn />
+                            {hasOtherSignIn && (
+                                <div className="flex flex-col gap-[var(--ind-space-3)]">
+                                    {sso && (
+                                        <SingleSignOnButton
+                                            sso={sso}
+                                            error={errors.sso}
+                                        />
+                                    )}
+                                    {passkey.isSupported && (
+                                        <PasskeySignIn passkey={passkey} />
+                                    )}
+                                </div>
+                            )}
+                            {hasOtherSignIn && <EmailDivider />}
 
                             <Form
                                 {...store.form()}
@@ -208,14 +265,9 @@ export default function Login({
                                                 autoComplete="current-password"
                                             />
                                             {errors.password && (
-                                                <p
-                                                    className="mt-[5px] mb-0 text-[11.5px]"
-                                                    style={{
-                                                        color: 'var(--ind-status-error-fg)',
-                                                    }}
-                                                >
+                                                <ErrorText>
                                                     {errors.password}
-                                                </p>
+                                                </ErrorText>
                                             )}
                                         </div>
 

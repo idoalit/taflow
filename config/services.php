@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    /*
+    | Single sign-on through the institution's Authelia (OpenID Connect).
+    | Offered on the sign-in screen only once the base URL and client ID are
+    | set. It signs in accounts that already exist; it never creates one.
+    */
+    'authelia' => [
+        'base_url' => env('AUTHELIA_BASE_URL'),
+        'client_id' => env('AUTHELIA_CLIENT_ID'),
+        'client_secret' => env('AUTHELIA_CLIENT_SECRET'),
+        'redirect' => env('AUTHELIA_REDIRECT_URI', '/auth/sso/callback'),
+        'label' => env('AUTHELIA_LABEL', 'Masuk dengan SSO'),
+    ],
+
 ];
