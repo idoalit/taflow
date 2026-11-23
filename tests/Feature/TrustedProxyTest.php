@@ -42,6 +42,17 @@ it('does not believe forwarded headers from an address it was not told to trust'
     expect(route('login'))->toStartWith('http://')->not->toContain('jahat.example');
 });
 
+it('builds https links when the application address is https even if the gateway says nothing', function (): void {
+    config(['app.url' => 'https://ta.kampus.ac.id']);
+    trustGateway('10.0.0.5');
+
+    $response = $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.5'])
+        ->get('/dashboard')
+        ->assertRedirect();
+
+    expect($response->headers->get('Location'))->toStartWith('https://')->toEndWith('/login');
+});
+
 it('believes nobody when no gateway is configured', function (): void {
     trustGateway('');
 
