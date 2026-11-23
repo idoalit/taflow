@@ -63,6 +63,30 @@ it('rejects a code another program studi already uses', function (): void {
     expect(Department::count())->toBe(1);
 });
 
+it('accepts a code numbered with dots', function (): void {
+    $this->actingAs(makeSuperAdmin())
+        ->post(route('superadmin.departments.store'), [
+            'name' => 'Keperawatan Semarang Program Diploma Tiga',
+            'code' => '1.1.11',
+            'is_active' => true,
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect(Department::where('code', '1.1.11')->exists())->toBeTrue();
+});
+
+it('rejects a code with characters other than letters, digits, dots, dashes and underscores', function (): void {
+    $this->actingAs(makeSuperAdmin())
+        ->post(route('superadmin.departments.store'), [
+            'name' => 'Teknik Sipil',
+            'code' => 'TS/01',
+            'is_active' => true,
+        ])
+        ->assertSessionHasErrors(['code' => 'Kode hanya boleh berisi huruf, angka, titik, tanda hubung, dan garis bawah.']);
+
+    expect(Department::count())->toBe(0);
+});
+
 it('requires a name and a code', function (): void {
     $this->actingAs(makeSuperAdmin())
         ->post(route('superadmin.departments.store'), [])
