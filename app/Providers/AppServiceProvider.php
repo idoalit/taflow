@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\ExceptionResponse;
@@ -42,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureErrorPages();
         $this->configureTrustedProxies();
+        $this->configureUrlScheme();
 
         // spatie's Role is not ours to annotate with #[UsePolicy].
         Gate::policy(Role::class, RolePolicy::class);
@@ -106,6 +108,18 @@ class AppServiceProvider extends ServiceProvider
         TrustProxies::at(trim($proxies) === '*'
             ? '*'
             : array_values(array_filter(array_map(trim(...), explode(',', $proxies)))));
+    }
+
+    /**
+     * Build every link over https when the application's own address is
+     * https. Not every gateway says so in X-Forwarded-Proto, and a page served
+     * over https cannot load its scripts or follow its redirects over http.
+     */
+    protected function configureUrlScheme(): void
+    {
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
     }
 
     /**
