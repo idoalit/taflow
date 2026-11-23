@@ -34,7 +34,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // Inside HandleInertiaRequests, so the redirect it answers a
             // refused write with is adjusted for Inertia on the way out.
             RestrictImpersonation::class,
-            AddLinkHeadersForPreloadedAssets::class,
+            // Capped: every preloaded chunk and font would otherwise go into
+            // one Link header, which pushes the response headers past the 4k
+            // nginx buffers by default and makes the gateway answer 502.
+            AddLinkHeadersForPreloadedAssets::using(10),
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
