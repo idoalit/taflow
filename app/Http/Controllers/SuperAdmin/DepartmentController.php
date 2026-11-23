@@ -180,13 +180,15 @@ class DepartmentController extends Controller
 
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:20', 'alpha_dash:ascii', Rule::unique(Department::class)->ignore($department)],
+            // Dots too: the campus numbers its program studi like 1.1.11.
+            'code' => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique(Department::class)->ignore($department)],
             'faculty' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['required', 'boolean'],
         ], [
             'code.unique' => 'Kode ini sudah dipakai program studi lain.',
+            'code.regex' => 'Kode hanya boleh berisi huruf, angka, titik, tanda hubung, dan garis bawah.',
         ], [
             'name' => 'nama program studi',
             'code' => 'kode',
